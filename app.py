@@ -65,32 +65,23 @@ def traiter_img(img, Nc, Nd, dim_max):
 
         # Initialiser l'index de la couleur sélectionnée
         if 'selected_colors' not in st.session_state:
-            st.session_state.selected_colors = [None] * len(sorted_cls)  # Couleurs initiales
+            st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
 
         # Sélection des couleurs pour chaque cluster
         for i, cl_idx in enumerate(sorted_cls):
             st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
-
+            
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
 
-            # Afficher les cases à cocher avec les carrés de couleur
-            selected_color = st.radio(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'radio_{i}')
-
-            # Afficher les carrés de couleur pour chaque case à cocher
-            for color in col_options:
+            # Afficher les boutons de couleur
+            cols = st.columns(len(col_options))
+            for j, color in enumerate(col_options):
                 rgb = pal[color]
-                st.markdown(
-                    f'<div style="display: flex; align-items: center; margin-bottom: 5px;">'
-                    f'<input type="radio" name="color_{i}" value="{color}" {"checked" if selected_color == color else ""} style="margin-right: 8px;">'
-                    f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></div>'
-                    f'{color}'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
-
-            # Mettre à jour la sélection de couleurs
-            st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
+                if cols[j].button(color, key=f'color_btn_{i}_{j}', style={"background-color": f'rgb({rgb[0]}, {rgb[1]}, {rgb[2]})', "color": "white"}):
+                    # Mettre à jour la sélection de couleurs
+                    st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
+                    st.experimental_rerun()  # Rafraîchir l'app pour mettre à jour l'image
 
         # Mise à jour de l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
