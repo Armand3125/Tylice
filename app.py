@@ -75,18 +75,17 @@ def traiter_img(img, Nc, Nd, dim_max):
             col_options = cl_proches[i]
 
             # Afficher les cases à cocher avec les carrés de couleur
-            selected_color = st.radio(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'radio_{i}')
-            
-            for color in col_options:
-                rgb = pal[color]
-                st.markdown(
-                    f'<div style="display: flex; align-items: center; margin-bottom: 5px;">'
-                    f'<input type="radio" name="color_{i}" value="{color}" {"checked" if selected_color == color else ""} style="margin-right: 8px;">'
-                    f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></div>'
-                    f'{color}'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
+            selected_color = st.selectbox(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'selectbox_{i}')
+
+            # Afficher le carré de couleur
+            rgb = pal[selected_color]
+            st.markdown(
+                f'<div style="display: flex; align-items: center; margin-bottom: 5px;">'
+                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></div>'
+                f'{selected_color}'
+                f'</div>',
+                unsafe_allow_html=True
+            )
 
             # Mettre à jour la sélection de couleurs
             st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
