@@ -71,7 +71,7 @@ def traiter_img(img, Nc, Nd, dim_max):
 
     # Sélection des couleurs pour chaque cluster
     for i, cl_idx in enumerate(sorted_cls):
-        st.write(f"Cluster {i+1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
+        st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
         
         # Créer des boutons colorés
         col_options = cl_proches[i]
@@ -81,17 +81,8 @@ def traiter_img(img, Nc, Nd, dim_max):
             rgb = pal[col_name]
             button_color = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
             
-            # Utiliser st.markdown pour créer un bouton stylisé
-            button_html = f"""
-            <div style="text-align: center;">
-                <button style="background-color: {button_color}; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px;">
-                    {col_name}
-                </button>
-            </div>
-            """
-            
-            # Si le bouton est cliqué, mettre à jour l'état de la couleur sélectionnée
-            if st.markdown(button_html, unsafe_allow_html=True):
+            # Utiliser st.button avec une clé unique pour chaque bouton
+            if st.button(f"{col_name}", key=f"btn_{i}_{j}"):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
@@ -100,9 +91,8 @@ def traiter_img(img, Nc, Nd, dim_max):
         st.success(selected_color_message)
 
     # Mise à jour de l'image avec les couleurs sélectionnées
-    if st.button("Appliquer les modifications", key="apply_button"):
-        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-        st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", use_column_width=True)
+    new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
+    st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", use_column_width=True)
 
 # Widgets d'entrée
 st.title("Traitement d'Image avec Palette de Couleurs")
