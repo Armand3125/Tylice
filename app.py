@@ -73,29 +73,20 @@ def traiter_img(img, Nc, Nd, dim_max):
 
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
-
-            # Afficher un carré de couleur à côté de chaque option avec le nom de la couleur
+            
+            # Afficher les cases à cocher avec les carrés de couleur
             selected_color = st.radio(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'radio_{i}')
             for color in col_options:
                 rgb = pal[color]
-                if selected_color == color:
-                    st.markdown(
-                        f'<div style="display: flex; align-items: center; margin-bottom: 5px;">'
-                        f'<input type="radio" name="color_{i}" value="{color}" checked style="margin-right: 8px;">'
-                        f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></div>'
-                        f'{color}'
-                        f'</div>',
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.markdown(
-                        f'<div style="display: flex; align-items: center; margin-bottom: 5px;">'
-                        f'<input type="radio" name="color_{i}" value="{color}" style="margin-right: 8px;">'
-                        f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></div>'
-                        f'{color}'
-                        f'</div>',
-                        unsafe_allow_html=True
-                    )
+                # Afficher un carré de couleur à côté de chaque option avec le nom de la couleur
+                st.markdown(
+                    f'<div style="display: flex; align-items: center; margin-bottom: 5px;">'
+                    f'<input type="radio" name="color_{i}" value="{color}" {"checked" if selected_color == color else ""} style="margin-right: 8px;">'
+                    f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></div>'
+                    f'{color}'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
 
             # Mettre à jour la sélection de couleurs
             st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
