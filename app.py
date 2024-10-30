@@ -78,7 +78,8 @@ def traiter_img(img, Nc, Nd, dim_max):
             cols = st.columns(len(col_options))
             for j, color in enumerate(col_options):
                 rgb = pal[color]
-                if cols[j].button(color, key=f'color_btn_{i}_{j}', style={"background-color": f'rgb({rgb[0]}, {rgb[1]}, {rgb[2]})', "color": "white"}):
+                # Create a button with the color
+                if cols[j].button(color):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
                     st.experimental_rerun()  # Rafraîchir l'app pour mettre à jour l'image
