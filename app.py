@@ -82,7 +82,8 @@ def traiter_img(img, Nc, Nd, dim_max):
             # Affichage de la case à cocher et du carré de couleur dans une seule ligne
             checkbox_label = f"Checkbox {i}_{j}"
             is_checked = (st.session_state.selected_colors[i] == j)
-            checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label, help=col_name)
+            checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label, help=col_name, 
+                                          label_visibility="collapsed")
 
             # Affichage du carré de couleur à droite de la case à cocher
             st.markdown(
