@@ -80,19 +80,13 @@ def traiter_img(img, Nc, Nd, dim_max):
 
             # Mettre à jour la sélection de couleurs
             st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
-            selected_color_message = f"Vous avez sélectionné: {selected_color}"
 
-            # Afficher le rectangle de couleur et le nom
+            # Afficher le carré de couleur à côté de chaque option
             rgb = pal[selected_color]
             st.markdown(
-                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>'
-                f'<span style="margin-left: 4px; vertical-align: middle;">{selected_color}</span>',
+                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>',
                 unsafe_allow_html=True
             )
-
-        # Afficher le message de couleur sélectionnée une seule fois
-        if selected_color_message:
-            st.success(selected_color_message)
 
         # Mise à jour de l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
@@ -116,3 +110,4 @@ if uploaded_file is not None:
 if st.button("Rafraîchir l'image"):
     if uploaded_file is not None:
         traiter_img(uploaded_file, Nc, Nd, dim_max)
+
