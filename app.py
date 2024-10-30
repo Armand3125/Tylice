@@ -78,10 +78,8 @@ def traiter_img(img, Nc, Nd, dim_max):
         cols = st.columns(len(col_options))  # Créer des colonnes pour les boutons
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            button_color = f"background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); padding: 10px; border: none; border-radius: 5px; color: white; cursor: pointer;"
-            
-            # Créer un bouton coloré en utilisant st.markdown
-            if st.markdown(f'<button style="{button_color}">{col_name}</button>', unsafe_allow_html=True):
+            # Utiliser st.button pour garder la fonctionnalité
+            if st.button(col_name, key=f"btn_{i}_{j}"):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
