@@ -54,15 +54,7 @@ def traiter_img(img, Nc, Nd, dim_max):
         sorted_cls = sorted(cl_counts.keys(), key=lambda x: cl_counts[x], reverse=True)
 
         cl_proches = [proches_lim(cl_centers[i], pal, Nd) for i in sorted_cls]
-        initial_img_arr = np.zeros_like(img_arr)
-        for i in range(img_arr.shape[0]):
-            for j in range(img_arr.shape[1]):
-                lbl = labels[i * img_arr.shape[1] + j]
-                initial_img_arr[i, j] = cl_centers[lbl]
-
-        # Afficher l'image initiale
-        st.image(initial_img_arr.astype('uint8'), caption="Image Initiale", use_column_width=True)
-
+        
         # Initialiser l'index de la couleur sélectionnée
         if 'selected_colors' not in st.session_state:
             st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
