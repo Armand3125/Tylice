@@ -83,6 +83,8 @@ def traiter_img(img, Nc, Nd, dim_max):
                     
                     # Mettre à jour l'image avec la nouvelle sélection de couleur
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
+                    
+                    # Remplacer l'image affichée
                     st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.6 * dim_max))
                 
                 # Afficher la couleur à droite du bouton
