@@ -93,9 +93,15 @@ def traiter_img(img, Nc, Nd, dim_max):
                     st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
                 else:
-                    # Réinitialiser l'ancienne sélection pour ce cluster
+                    # Si la case à cocher n'est pas sélectionnée, vérifier si c'est l'ancienne sélection
                     if st.session_state.selected_colors[i] == j:
                         st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
+
+                # Si la case est cochée, décocher toutes les autres du même cluster
+                if checkbox_value:
+                    for k in range(len(col_options)):
+                        if k != j:  # Ne pas décocher la case actuellement cochée
+                            st.session_state.selected_colors[i] = k  # Réinitialiser les autres
 
             with col2:
                 # Affichage du carré de couleur à droite de la case à cocher
@@ -124,7 +130,3 @@ dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_va
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
 
-# Bouton pour rafraîchir l'image
-if st.button("Rafraîchir l'image"):
-    if uploaded_file is not None:
-        traiter_img(uploaded_file, Nc, Nd, dim_max)
