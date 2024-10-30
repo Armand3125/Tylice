@@ -72,7 +72,7 @@ def traiter_img(img, Nc, Nd, dim_max):
     # Sélection des couleurs pour chaque cluster
     for i, cl_idx in enumerate(sorted_cls):
         st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
-        
+
         # Créer des cases à cocher pour chaque couleur
         col_options = cl_proches[i]
 
@@ -90,12 +90,18 @@ def traiter_img(img, Nc, Nd, dim_max):
 
                 # Si la case à cocher est sélectionnée
                 if checkbox_value:
-                    st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
+                    # Mémoriser la couleur sélectionnée et désélectionner les autres
+                    st.session_state.selected_colors[i] = j
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
                 else:
-                    # Réinitialiser l'ancienne sélection pour ce cluster
+                    # Vérifier si cette couleur était sélectionnée et réinitialiser si nécessaire
                     if st.session_state.selected_colors[i] == j:
                         st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
+
+                # Deselect all other checkboxes in the current cluster
+                for k in range(len(col_options)):
+                    if k != j and st.session_state.selected_colors[i] == k:
+                        st.session_state.selected_colors[i] = None  # Deselect other checkboxes
 
             with col2:
                 # Affichage du carré de couleur à droite de la case à cocher
