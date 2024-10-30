@@ -63,7 +63,7 @@ def traiter_img(img, Nc, Nd, dim_max):
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
 
         # Afficher l'image modifiée au-dessus des boutons avec une taille réduite à 60% de dim_max
-        st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.8 * dim_max))
+        st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.6 * dim_max))
 
         # Sélection des couleurs pour chaque cluster
         for i, cl_idx in enumerate(sorted_cls):
@@ -78,8 +78,8 @@ def traiter_img(img, Nc, Nd, dim_max):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
-                # Créer un bouton coloré avec HTML
-                if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
+                # Créer un bouton coloré avec HTML et une clé unique
+                if cols[j].button(label="", key=f'button_{i}_{j}_{np.random.randint(0, 10000)}', help=color):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
                     
@@ -99,9 +99,4 @@ def traiter_img(img, Nc, Nd, dim_max):
 st.title("Traitement d'Image avec Palette de Couleurs")
 uploaded_file = st.file_uploader("Choisissez une image", type=["jpg", "jpeg", "png"])
 Nc = st.slider("Nombre de Clusters", 2, 7, 4)
-Nd = st.slider("Nombre de Couleurs dans la Palette", 2, len(pal), 6)
-dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_value=1000, value=400, step=50)
-
-# Lancer le traitement d'image si un fichier est téléchargé
-if uploaded_file is not None:
-    traiter_img(uploaded_file, Nc, Nd, dim_max)
+Nd = st.slider("Nombre de Couleurs dans la Palette", 
