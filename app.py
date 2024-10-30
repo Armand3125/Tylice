@@ -73,16 +73,16 @@ def traiter_img(img, Nc, Nd, dim_max):
         # Sélection des couleurs pour chaque cluster
         for i, cl_idx in enumerate(sorted_cls):
             st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
-            
+
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
             selected_color = st.selectbox(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'selectbox_{i}')
-            
+
             # Mettre à jour la sélection de couleurs
             st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
             selected_color_message = f"Vous avez sélectionné: {selected_color}"
-            
-            # Afficher le carré de couleur à droite de la case à cocher
+
+            # Afficher le rectangle de couleur et le nom
             rgb = pal[selected_color]
             st.markdown(
                 f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>'
