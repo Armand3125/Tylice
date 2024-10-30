@@ -105,7 +105,7 @@ def traiter_img(img, Nc, Nd, dim_max):
             with col2:
                 # Affichage du carré de couleur à droite de la case à cocher
                 st.markdown(
-                    f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 8px; vertical-align: middle;"></div>'
+                    f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 2px; vertical-align: middle;"></div>'
                     f'<span style="margin-left: 8px; vertical-align: middle;">{col_name}</span>',
                     unsafe_allow_html=True
                 )
