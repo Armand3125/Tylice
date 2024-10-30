@@ -63,7 +63,7 @@ def traiter_img(img, Nc, Nd, dim_max):
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
 
         # Afficher l'image modifiée au-dessus des boutons avec une taille réduite à 60% de dim_max
-        st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.6 * dim_max))
+        st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.8 * dim_max))
 
         # Sélection des couleurs pour chaque cluster
         for i, cl_idx in enumerate(sorted_cls):
