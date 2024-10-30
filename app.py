@@ -59,8 +59,10 @@ def traiter_img(img, Nc, Nd, dim_max):
         if 'selected_colors' not in st.session_state:
             st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
 
-        # Afficher l'image modifiée au-dessus des boutons
+        # Mise à jour de l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
+
+        # Afficher l'image modifiée au-dessus des boutons
         st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.6 * dim_max))
 
         # Sélection des couleurs pour chaque cluster
@@ -80,6 +82,7 @@ def traiter_img(img, Nc, Nd, dim_max):
                 if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
+                    
                     # Mettre à jour l'image avec la nouvelle sélection de couleur
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.6 * dim_max))
@@ -103,3 +106,8 @@ dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_va
 # Lancer le traitement d'image si un fichier est téléchargé
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
+
+# Bouton pour rafraîchir l'image
+if st.button("Rafraîchir l'image"):
+    if uploaded_file is not None:
+        traiter_img(uploaded_file, Nc, Nd, dim_max)
