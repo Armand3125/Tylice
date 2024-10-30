@@ -78,16 +78,18 @@ def traiter_img(img, Nc, Nd, dim_max):
         cols = st.columns(len(col_options))  # Créer des colonnes pour les boutons
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            button_style = f"background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); padding: 10px; border: none; border-radius: 5px; color: white; cursor: pointer;"
-            button_html = f'<button style="{button_style}" onclick="window.parent.postMessage(\'{col_name}\', \'*\')">{col_name}</button>'
+            button_color = f"background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); padding: 10px; border: none; border-radius: 5px; color: white; cursor: pointer;"
 
-            # Affichage du bouton coloré
-            st.markdown(button_html, unsafe_allow_html=True)
-
-            # Vérification des clics sur le bouton
-            if st.button(col_name, key=f"btn_{i}_{j}"):
+            # Utiliser une clé unique pour chaque bouton et afficher le bouton
+            if st.button(f"{col_name}", key=f"btn_{i}_{j}"):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+
+            # Appliquer le style CSS au bouton
+            st.markdown(
+                f'<style>button[data-baseweb="button"] {{ {button_color} }}</style>',
+                unsafe_allow_html=True,
+            )
 
     # Afficher le message de couleur sélectionnée une seule fois
     if selected_color_message:
@@ -107,4 +109,3 @@ dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_va
 # Lancer le traitement d'image si un fichier est téléchargé
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
-
