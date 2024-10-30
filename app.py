@@ -72,38 +72,23 @@ def traiter_img(img, Nc, Nd, dim_max):
     # Sélection des couleurs pour chaque cluster
     for i, cl_idx in enumerate(sorted_cls):
         st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
-
-        # Créer des cases à cocher pour chaque couleur
+        
+        # Créer des colonnes pour le bouton de couleur
         col_options = cl_proches[i]
 
+        cols = st.columns(len(col_options))
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
 
-            # Affichage de la case à cocher et du carré de couleur dans une seule ligne
-            checkbox_label = f"Checkbox {i}_{j}"
-            is_checked = (st.session_state.selected_colors[i] == j)
-            checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label, help=col_name, 
-                                          label_visibility="collapsed")
-
-            # Affichage du carré de couleur à droite de la case à cocher
-            st.markdown(
-                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>'
-                f'<span style="margin-left: 4px; vertical-align: middle;">{col_name}</span>',
-                unsafe_allow_html=True
-            )
-
-            # Si la case à cocher est sélectionnée
-            if checkbox_value:
-                # Mémoriser la couleur sélectionnée et désélectionner les autres
-                for k in range(len(col_options)):
-                    if k != j:  # Ne pas désélectionner la case actuellement sélectionnée
-                        st.session_state.selected_colors[i] = None
-                st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
-                selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
-            else:
-                # Vérifier si cette couleur était sélectionnée et réinitialiser si nécessaire
-                if st.session_state.selected_colors[i] == j:
-                    st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
+            with cols[j]:
+                # Affichage du bouton de couleur
+                if st.button(f"{col_name}", key=f"btn_{i}_{j}", help=f"Choisissez {col_name}", style={"backgroundColor": f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"}):
+                    # Mémoriser la couleur sélectionnée
+                    for k in range(len(col_options)):
+                        if k != j:  # Ne pas désélectionner la case actuellement sélectionnée
+                            st.session_state.selected_colors[i] = None
+                    st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
+                    selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
     # Afficher le message de couleur sélectionnée une seule fois
     if selected_color_message:
