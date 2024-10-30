@@ -30,7 +30,7 @@ def nouvelle_img(img_arr, labels, cl, idx, pal):
         for j in range(img_arr.shape[1]):
             lbl = labels[i * img_arr.shape[1] + j]
             cl_idx = np.where(sorted_cls == lbl)[0][0]
-            color_idx = idx[cl_idx]
+            color_idx = idx[cl_idx] if cl_idx < len(idx) else 0  # Vérification de la validité de l'indice
             new_img_arr[i, j] = pal[cl[cl_idx][color_idx]]
     return new_img_arr
 
@@ -87,9 +87,8 @@ def traiter_img(img, Nc, Nd, dim_max):
                 unsafe_allow_html=True
             )
 
-            is_checked = st.session_state.get(f"chk_{i}_{j}", False)  # Récupérer l'état de la case à cocher
             # Vérification si la case est cochée
-            if is_checked:
+            if st.checkbox("", key=f"chk_{i}_{j}"):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
