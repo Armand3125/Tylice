@@ -68,18 +68,19 @@ def traiter_img(img, Nc, Nd, dim_max):
     for i, cl_idx in enumerate(sorted_cls):
         st.write(f"Cluster {i+1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
         
-        col_options = []
-        for j, col_name in enumerate(cl_proches[i]):
-            color_hex = "#{:02x}{:02x}{:02x}".format(*pal[col_name])
-            col_options.append((j, col_name, color_hex))
+        # Créer une liste d'options avec des noms et des codes couleur
+        col_options = [(j, col_name) for j, col_name in enumerate(cl_proches[i])]
         
-        selected_color = st.radio(
+        # Créer une liste de descriptions à afficher
+        col_descriptions = [f"{name} - rgb{pal[name]}" for _, name in col_options]
+        
+        # Radio avec descriptions de couleur
+        selected_idx = st.radio(
             f"Choisissez une couleur pour le cluster {i+1}",
-            col_options,
-            index=0,
-            format_func=lambda x: f"{col_options[x][1]} - {col_options[x][2]}"
+            options=range(len(col_options)),
+            format_func=lambda j: col_descriptions[j]
         )
-        idx[i] = selected_color[0]
+        idx[i] = col_options[selected_idx][0]
 
     # Mise à jour de l'image avec les couleurs sélectionnées
     if st.button("Appliquer les modifications", key="apply_button"):
