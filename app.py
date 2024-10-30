@@ -69,32 +69,18 @@ def traiter_img(img, Nc, Nd, dim_max):
         st.write(f"Cluster {i+1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
         
         # Créer des boutons colorés
-        color_choice = st.radio(
-            f"Choisissez une couleur pour le cluster {i+1}",
-            options=range(len(cl_proches[i])),
-            format_func=lambda j: " ",
-            key=f"radio_{i}"
-        )
+        col_options = cl_proches[i]
+        selected_color = None
         
-        # Afficher les boutons en couleur
-        for j, col_name in enumerate(cl_proches[i]):
+        cols = st.columns(len(col_options))  # Créer des colonnes pour les boutons
+        for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            st.markdown(
-                f"""
-                <style>
-                .stRadio div:nth-child({j+1}) div {{
-                    background-color: rgb{rgb};
-                    height: 30px;
-                    width: 30px;
-                    display: inline-block;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    }}
-                </style>
-                """, unsafe_allow_html=True
-            )
-            if j == color_choice:
-                idx[i] = j
+            with cols[j]:
+                if st.button(f"{col_name}", key=f"btn_{i}_{j}", 
+                             help=f"RGB: {rgb}", 
+                             style=f"background-color: rgb{rgb}; color: white; padding: 10px; border-radius: 5px;"):
+                    selected_color = j
+                    idx[i] = selected_color
 
     # Mise à jour de l'image avec les couleurs sélectionnées
     if st.button("Appliquer les modifications", key="apply_button"):
