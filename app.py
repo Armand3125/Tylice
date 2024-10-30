@@ -54,19 +54,19 @@ def traiter_img(img, Nc, Nd, dim_max):
         sorted_cls = sorted(cl_counts.keys(), key=lambda x: cl_counts[x], reverse=True)
 
         cl_proches = [proches_lim(cl_centers[i], pal, Nd) for i in sorted_cls]
-        
+
         # Initialiser l'index de la couleur sélectionnée
         if 'selected_colors' not in st.session_state:
             st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
 
         # Afficher l'image modifiée au-dessus des boutons
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-        st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.6 * dim_max))
+        st.session_state.modified_image = new_img_arr.astype('uint8')
 
         # Sélection des couleurs pour chaque cluster
         for i, cl_idx in enumerate(sorted_cls):
             st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
-            
+
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
 
@@ -75,18 +75,16 @@ def traiter_img(img, Nc, Nd, dim_max):
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
-                
+
                 # Créer un bouton coloré avec HTML
                 if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
-                    
+
                     # Mettre à jour l'image avec la nouvelle sélection de couleur
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-                    
-                    # Remplacer l'image affichée immédiatement après le clic
-                    st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", width=int(0.6 * dim_max), use_column_width=True)
-                
+                    st.session_state.modified_image = new_img_arr.astype('uint8')
+
                 # Afficher la couleur à droite du bouton
                 cols[j].markdown(
                     f'<div style="background-color: {rgb_str}; width: 50px; height: 20px; display: inline-block; margin-left: 5px;"></div>',
@@ -106,6 +104,10 @@ dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_va
 # Lancer le traitement d'image si un fichier est téléchargé
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
+
+# Afficher l'image modifiée en haut de la page
+if 'modified_image' in st.session_state:
+    st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(0.6 * dim_max))
 
 # Bouton pour rafraîchir l'image
 if st.button("Rafraîchir l'image"):
