@@ -68,19 +68,33 @@ def traiter_img(img, Nc, Nd, dim_max):
     for i, cl_idx in enumerate(sorted_cls):
         st.write(f"Cluster {i+1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
         
-        # Créer une liste d'options avec des noms et des codes couleur
-        col_options = [(j, col_name) for j, col_name in enumerate(cl_proches[i])]
-        
-        # Créer une liste de descriptions à afficher
-        col_descriptions = [f"{name} - rgb{pal[name]}" for _, name in col_options]
-        
-        # Radio avec descriptions de couleur
-        selected_idx = st.radio(
+        # Créer des boutons colorés
+        color_choice = st.radio(
             f"Choisissez une couleur pour le cluster {i+1}",
-            options=range(len(col_options)),
-            format_func=lambda j: col_descriptions[j]
+            options=range(len(cl_proches[i])),
+            format_func=lambda j: " ",
+            key=f"radio_{i}"
         )
-        idx[i] = col_options[selected_idx][0]
+        
+        # Afficher les boutons en couleur
+        for j, col_name in enumerate(cl_proches[i]):
+            rgb = pal[col_name]
+            st.markdown(
+                f"""
+                <style>
+                .stRadio div:nth-child({j+1}) div {{
+                    background-color: rgb{rgb};
+                    height: 30px;
+                    width: 30px;
+                    display: inline-block;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    }}
+                </style>
+                """, unsafe_allow_html=True
+            )
+            if j == color_choice:
+                idx[i] = j
 
     # Mise à jour de l'image avec les couleurs sélectionnées
     if st.button("Appliquer les modifications", key="apply_button"):
