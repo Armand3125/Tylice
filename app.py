@@ -74,10 +74,12 @@ def traiter_img(img, Nc, Nd, dim_max):
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
 
-            # Afficher chaque couleur avec un carré
+            # Afficher chaque couleur avec un carré aligné
+            selected_color = st.radio(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'radio_{i}')
+
+            # Afficher un carré de couleur à côté de chaque option
             for color in col_options:
                 rgb = pal[color]
-                # HTML pour aligner le carré de couleur avec le radio button
                 st.markdown(
                     f'<label style="display: flex; align-items: center; margin-bottom: 5px;">'
                     f'<input type="radio" name="cluster_{i}" value="{color}" style="margin-right: 8px;">'
@@ -85,6 +87,9 @@ def traiter_img(img, Nc, Nd, dim_max):
                     f'{color}</label>',
                     unsafe_allow_html=True
                 )
+
+            # Mettre à jour la sélection de couleurs
+            st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
 
         # Mise à jour de l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
