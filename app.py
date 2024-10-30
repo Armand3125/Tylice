@@ -30,7 +30,6 @@ def nouvelle_img(img_arr, labels, cl, idx, pal):
         for j in range(img_arr.shape[1]):
             lbl = labels[i * img_arr.shape[1] + j]
             cl_idx = np.where(sorted_cls == lbl)[0][0]
-            # Utiliser un index valide pour la palette
             if cl_idx < len(cl) and idx[cl_idx] < len(cl[cl_idx]):
                 color_name = cl[cl_idx][idx[cl_idx]]
                 new_img_arr[i, j] = pal[color_name]
@@ -79,11 +78,17 @@ def traiter_img(img, Nc, Nd, dim_max):
         
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            # Affichage de la case à cocher à gauche du carré de couleur
             col1, col2 = st.columns([1, 5])  # Créer deux colonnes
 
             with col1:
-                if st.checkbox("", key=f"chk_{i}_{j}"):
+                # Vérifier si la couleur actuelle est déjà sélectionnée
+                is_checked = (st.session_state.selected_colors[i] == j)
+                checkbox_label = f"Checkbox {i}_{j}"
+                # Si cette case est cochée, ne pas activer les autres
+                checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label)
+
+                # Si la case à cocher est sélectionnée, mémoriser la couleur
+                if checkbox_value:
                     st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
@@ -94,6 +99,13 @@ def traiter_img(img, Nc, Nd, dim_max):
                     f'<span style="margin-left: 8px; vertical-align: middle;">{col_name}</span>',
                     unsafe_allow_html=True
                 )
+
+        # Désactiver les autres cases à cocher si une est sélectionnée
+        if st.session_state.selected_colors[i] is not None:
+            for j in range(len(col_options)):
+                if st.session_state.selected_colors[i] != j:
+                    st.session_state.checkbox_disabled = True
+                    st.session_state.selected_colors[i] = j if checkbox_value else st.session_state.selected_colors[i]
 
     # Afficher le message de couleur sélectionnée une seule fois
     if selected_color_message:
