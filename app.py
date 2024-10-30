@@ -83,8 +83,10 @@ def traiter_img(img, Nc, Nd, dim_max):
 
             # Afficher le carré de couleur à côté de chaque option
             rgb = pal[selected_color]
+            
+            # Créer un carré de couleur en HTML
             st.markdown(
-                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>',
+                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>{selected_color}',
                 unsafe_allow_html=True
             )
 
