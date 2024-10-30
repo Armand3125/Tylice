@@ -79,12 +79,12 @@ def traiter_img(img, Nc, Nd, dim_max):
         
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            # Affichage de la case à cocher avec un carré de couleur à droite
+            # Affichage de la case à cocher à gauche du carré de couleur
             if st.checkbox("", key=f"chk_{i}_{j}"):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
-            # Affichage du carré de couleur à droite
+            # Affichage du carré de couleur à droite de la case à cocher
             st.markdown(
                 f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 8px; vertical-align: middle;"></div>'
                 f'<span style="margin-left: 8px; vertical-align: middle;">{col_name}</span>',
