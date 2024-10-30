@@ -82,6 +82,9 @@ def traiter_img(img, Nc, Nd, dim_max):
                 if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
+                    
+                    # Rafraîchir l'image modifiée immédiatement après la sélection
+                    traiter_img(uploaded_file, Nc, Nd, dim_max)
                 
                 # Afficher la couleur à droite du bouton
                 cols[j].markdown(
@@ -102,8 +105,3 @@ dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_va
 # Lancer le traitement d'image si un fichier est téléchargé
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
-
-# Bouton pour rafraîchir l'image
-if st.button("Rafraîchir l'image"):
-    if uploaded_file is not None:
-        traiter_img(uploaded_file, Nc, Nd, dim_max)
