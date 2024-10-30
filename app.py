@@ -96,7 +96,8 @@ def traiter_img(img, Nc, Nd, dim_max):
             # Désactiver les autres cases dans le même cluster
             for k in range(len(col_options)):
                 if k != j:
-                    st.session_state[f"Checkbox {i}_{k}"] = False  # Désactiver l'autre case
+                    if f"Checkbox {i}_{k}" in st.session_state:
+                        st.session_state[f"Checkbox {i}_{k}"] = False  # Désactiver l'autre case
 
             with col2:
                 # Affichage du carré de couleur à droite de la case à cocher
