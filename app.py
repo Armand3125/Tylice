@@ -73,12 +73,12 @@ def traiter_img(img, Nc, Nd, dim_max):
 
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
-            
+
             # Afficher les cases à cocher avec les carrés de couleur
             selected_color = st.radio(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'radio_{i}')
+            
             for color in col_options:
                 rgb = pal[color]
-                # Afficher un carré de couleur à côté de chaque option avec le nom de la couleur
                 st.markdown(
                     f'<div style="display: flex; align-items: center; margin-bottom: 5px;">'
                     f'<input type="radio" name="color_{i}" value="{color}" {"checked" if selected_color == color else ""} style="margin-right: 8px;">'
