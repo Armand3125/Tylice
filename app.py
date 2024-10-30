@@ -30,7 +30,7 @@ def nouvelle_img(img_arr, labels, cl, idx, pal):
         for j in range(img_arr.shape[1]):
             lbl = labels[i * img_arr.shape[1] + j]
             cl_idx = np.where(sorted_cls == lbl)[0][0]
-            if cl_idx < len(cl) and idx[cl_idx] is not None:
+            if cl_idx < len(cl) and idx[cl_idx] < len(cl[cl_idx]):
                 color_name = cl[cl_idx][idx[cl_idx]]
                 new_img_arr[i, j] = pal[color_name]
     return new_img_arr
@@ -64,7 +64,7 @@ def traiter_img(img, Nc, Nd, dim_max):
 
     # Initialiser l'index de la couleur sélectionnée
     if 'selected_colors' not in st.session_state:
-        st.session_state.selected_colors = [None] * len(sorted_cls)  # Couleurs initiales
+        st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
 
     # Variable pour stocker le message de sélection
     selected_color_message = ""
@@ -83,25 +83,19 @@ def traiter_img(img, Nc, Nd, dim_max):
             with col1:
                 # Vérifier si la couleur actuelle est déjà sélectionnée
                 is_checked = (st.session_state.selected_colors[i] == j)
+                checkbox_label = f"Checkbox {i}_{j}"
 
                 # Case à cocher
-                checkbox_label = f"Checkbox {i}_{j}"
                 checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label)
 
                 # Si la case à cocher est sélectionnée
                 if checkbox_value:
-                    # Mettre à jour l'index de sélection dans l'état de session
-                    st.session_state.selected_colors[i] = j  # Mémoriser la nouvelle couleur sélectionnée
+                    st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
-                    
-                    # Désélectionner les autres cases dans le même cluster
-                    for k in range(len(col_options)):
-                        if k != j:  # Si ce n'est pas la case actuelle
-                            st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
                 else:
-                    # Vérifier si c'était l'ancienne sélection
+                    # Si non sélectionnée, vérifier si c'est l'ancienne sélection
                     if st.session_state.selected_colors[i] == j:
-                        st.session_state.selected_colors[i] = None  # Réinitialiser si non sélectionnée
+                        st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
 
             with col2:
                 # Affichage du carré de couleur à droite de la case à cocher
