@@ -74,19 +74,20 @@ def traiter_img(img, Nc, Nd, dim_max):
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
 
-            # Afficher les "boutons" de couleur
+            # Utiliser une colonne pour afficher les boutons et les couleurs côte à côte
+            cols = st.columns(len(col_options))
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
                 # Créer un bouton coloré avec HTML
-                if st.button(label="", key=f'button_{i}_{j}', help=color):
+                if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
                 
-                # Afficher la couleur
-                st.markdown(
-                    f'<div style="background-color: {rgb_str}; width: 50px; height: 20px; display: inline-block; margin: 5px;"></div>',
+                # Afficher la couleur à droite du bouton
+                cols[j].markdown(
+                    f'<div style="background-color: {rgb_str}; width: 50px; height: 20px; display: inline-block; margin-left: 5px;"></div>',
                     unsafe_allow_html=True
                 )
 
