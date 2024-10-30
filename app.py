@@ -78,37 +78,31 @@ def traiter_img(img, Nc, Nd, dim_max):
 
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            col1, col2 = st.columns([1, 5])  # Créer deux colonnes
 
-            with col1:
-                # Vérifier si la couleur actuelle est déjà sélectionnée
-                is_checked = (st.session_state.selected_colors[i] == j)
-                checkbox_label = f"Checkbox {i}_{j}"
+            # Affichage de la case à cocher et du carré de couleur dans une seule ligne
+            checkbox_label = f"Checkbox {i}_{j}"
+            is_checked = (st.session_state.selected_colors[i] == j)
+            checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label, help=col_name)
 
-                # Case à cocher
-                checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label)
+            # Affichage du carré de couleur à droite de la case à cocher
+            st.markdown(
+                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>'
+                f'<span style="margin-left: 4px; vertical-align: middle;">{col_name}</span>',
+                unsafe_allow_html=True
+            )
 
-                # Si la case à cocher est sélectionnée
-                if checkbox_value:
-                    # Mémoriser la couleur sélectionnée et désélectionner les autres
-                    for k in range(len(col_options)):
-                        if k != j:  # Ne pas désélectionner la case actuellement sélectionnée
-                            st.session_state.selected_colors[i] = None
-                    st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
-                    selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
-
-                else:
-                    # Vérifier si cette couleur était sélectionnée et réinitialiser si nécessaire
-                    if st.session_state.selected_colors[i] == j:
-                        st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
-
-            with col2:
-                # Affichage du carré de couleur à droite de la case à cocher
-                st.markdown(
-                    f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>'
-                    f'<span style="margin-left: 4px; vertical-align: middle;">{col_name}</span>',
-                    unsafe_allow_html=True
-                )
+            # Si la case à cocher est sélectionnée
+            if checkbox_value:
+                # Mémoriser la couleur sélectionnée et désélectionner les autres
+                for k in range(len(col_options)):
+                    if k != j:  # Ne pas désélectionner la case actuellement sélectionnée
+                        st.session_state.selected_colors[i] = None
+                st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
+                selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+            else:
+                # Vérifier si cette couleur était sélectionnée et réinitialiser si nécessaire
+                if st.session_state.selected_colors[i] == j:
+                    st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
 
     # Afficher le message de couleur sélectionnée une seule fois
     if selected_color_message:
