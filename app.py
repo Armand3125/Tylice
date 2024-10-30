@@ -80,34 +80,27 @@ def traiter_img(img, Nc, Nd, dim_max):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
-                # Créer un bouton avec une couleur d'arrière-plan personnalisée
-                button_style = f"""
-                <style>
-                    .color-button {{
-                        background-color: {rgb_str};
-                        border: 1px solid black;
+                # Créer un bouton coloré
+                if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
+                    # Mettre à jour la sélection de couleurs
+                    st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
+                
+                # Style pour le bouton de couleur
+                st.markdown(
+                    f"""
+                    <style>
+                    .stButton {{
+                        background-color: {rgb_str} !important;
+                        border: none;
                         color: black;
                         cursor: pointer;
                         width: 50px;
                         height: 20px;
                         display: inline-block;
                     }}
-                </style>
-                <button class="color-button" onclick="window.location.href='?color={color}'"></button>
-                """
-                
-                # Utiliser st.markdown pour afficher le bouton
-                st.markdown(button_style, unsafe_allow_html=True)
-
-                # Mettre à jour la sélection de couleurs si le bouton est cliqué
-                if st.session_state.selected_colors[i] == j:
-                    st.markdown(
-                        f'<div style="background-color: {rgb_str}; width: 50px; height: 20px; border: 1px solid black; margin: auto;"></div>',
-                        unsafe_allow_html=True
-                    )
-                elif cols[j].button(label="", key=f'button_{i}_{j}', help=color):
-                    # Mettre à jour la sélection de couleurs
-                    st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
+                    </style>
+                    """, unsafe_allow_html=True
+                )
 
         # Mise à jour de l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
