@@ -30,7 +30,7 @@ def nouvelle_img(img_arr, labels, cl, idx, pal):
         for j in range(img_arr.shape[1]):
             lbl = labels[i * img_arr.shape[1] + j]
             cl_idx = np.where(sorted_cls == lbl)[0][0]
-            if cl_idx < len(cl) and idx[cl_idx] is not None:
+            if cl_idx < len(cl) and idx[cl_idx] < len(cl[cl_idx]):
                 color_name = cl[cl_idx][idx[cl_idx]]
                 new_img_arr[i, j] = pal[color_name]
     return new_img_arr
@@ -83,22 +83,22 @@ def traiter_img(img, Nc, Nd, dim_max):
             with col1:
                 # Vérifier si la couleur actuelle est déjà sélectionnée
                 is_checked = (st.session_state.selected_colors[i] == j)
+                checkbox_label = f"Checkbox {i}_{j}"
 
                 # Case à cocher
-                checkbox_label = f"Checkbox {i}_{j}"
                 checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label)
 
                 # Si la case à cocher est sélectionnée
                 if checkbox_value:
                     st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+                else:
+                    # Réinitialiser l'ancienne sélection pour ce cluster
+                    if st.session_state.selected_colors[i] == j:
+                        st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
 
-                    # Décocher toutes les autres cases dans le même cluster
-                    for k in range(len(col_options)):
-                        if k != j:  # Ne pas décocher la case actuellement cochée
-                            st.session_state.selected_colors[i] = k
-
-                # Afficher le carré de couleur
+            with col2:
+                # Affichage du carré de couleur à droite de la case à cocher
                 st.markdown(
                     f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 8px; vertical-align: middle;"></div>'
                     f'<span style="margin-left: 8px; vertical-align: middle;">{col_name}</span>',
@@ -124,3 +124,7 @@ dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_va
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
 
+# Bouton pour rafraîchir l'image
+if st.button("Rafraîchir l'image"):
+    if uploaded_file is not None:
+        traiter_img(uploaded_file, Nc, Nd, dim_max)
