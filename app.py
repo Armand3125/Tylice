@@ -77,16 +77,17 @@ def traiter_img(img, Nc, Nd, dim_max):
         
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            # Affichage de la case à cocher avec un carré de couleur
+            # Affichage de la case à cocher avec un carré de couleur à droite
             st.markdown(
                 f'<div style="display: flex; align-items: center;">'
-                f'<div style="width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></div>'
-                f'<span>{col_name}</span>'
+                f'<input type="checkbox" id="chk_{i}_{j}" onclick="this.click()"/>'  # Case à cocher
+                f'<div style="width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 8px;"></div>'
+                f'<span style="margin-left: 8px;">{col_name}</span>'
                 f'</div>',
                 unsafe_allow_html=True
             )
-            is_checked = st.checkbox("", key=f"chk_{i}_{j}")  # Case à cocher sans texte
 
+            is_checked = st.session_state.get(f"chk_{i}_{j}", False)  # Récupérer l'état de la case à cocher
             # Vérification si la case est cochée
             if is_checked:
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
