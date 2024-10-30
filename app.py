@@ -82,14 +82,21 @@ def traiter_img(img, Nc, Nd, dim_max):
                 
                 # Créer un bouton coloré avec CSS pour une forme ronde
                 button_html = f"""
-                <button style="background-color: {rgb_str}; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;" title="{color}"></button>
+                <button style="background-color: {rgb_str}; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;"></button>
                 """
-                if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
-                    # Mettre à jour la sélection de couleurs
-                    st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
                 
-                # Afficher le bouton avec couleur à droite
+                # Ajouter le bouton
                 cols[j].markdown(button_html, unsafe_allow_html=True)
+                
+                # Créer une case de couleur carrée à droite
+                cols[j].markdown(
+                    f'<div style="background-color: {rgb_str}; width: 20px; height: 20px; display: inline-block; margin-left: 5px; border: 1px solid black;"></div>',
+                    unsafe_allow_html=True
+                )
+
+                # Si le bouton est cliqué, mettre à jour la sélection de couleur
+                if st.button(label="", key=f'button_{i}_{j}', help=color):
+                    st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
 
         # Mise à jour de l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
