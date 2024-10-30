@@ -92,7 +92,8 @@ def traiter_img(img, Nc, Nd, dim_max):
                 if checkbox_value:
                     # Mémoriser la couleur sélectionnée et désélectionner les autres
                     for k in range(len(col_options)):
-                        st.session_state.selected_colors[i] = None  # Deselect all other checkboxes in the cluster
+                        if k != j:  # Ne pas désélectionner la case actuellement sélectionnée
+                            st.session_state.selected_colors[i] = None
                     st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
