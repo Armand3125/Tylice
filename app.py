@@ -62,7 +62,9 @@ def traiter_img(img, Nc, Nd, dim_max):
     # Afficher l'image initiale
     st.image(initial_img_arr.astype('uint8'), caption="Image Initiale", use_column_width=True)
 
-    idx = [0] * len(sorted_cls)
+    # Initialiser l'index de la couleur sélectionnée
+    if 'selected_colors' not in st.session_state:
+        st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
 
     # Sélection des couleurs pour chaque cluster
     for i, cl_idx in enumerate(sorted_cls):
@@ -70,7 +72,6 @@ def traiter_img(img, Nc, Nd, dim_max):
         
         # Créer des boutons colorés
         col_options = cl_proches[i]
-        selected_color = None
         
         cols = st.columns(len(col_options))  # Créer des colonnes pour les boutons
         for j, col_name in enumerate(col_options):
@@ -85,17 +86,15 @@ def traiter_img(img, Nc, Nd, dim_max):
                 </button>
             </div>
             """
+            
+            # Si le bouton est cliqué, mettre à jour l'état de la couleur sélectionnée
             if st.markdown(button_html, unsafe_allow_html=True):
-                selected_color = j
-                idx[i] = selected_color
-
-        # Appliquer la couleur sélectionnée
-        if selected_color is not None:
-            st.success(f"Vous avez sélectionné: {col_options[selected_color]}")
+                st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
+                st.success(f"Vous avez sélectionné: {col_name}")
 
     # Mise à jour de l'image avec les couleurs sélectionnées
     if st.button("Appliquer les modifications", key="apply_button"):
-        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, idx, pal)
+        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
         st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", use_column_width=True)
 
 # Widgets d'entrée
