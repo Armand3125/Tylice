@@ -75,32 +75,15 @@ def traiter_img(img, Nc, Nd, dim_max):
             col_options = cl_proches[i]
 
             # Afficher les boutons de couleur
-            cols = st.columns(len(col_options))
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
-                # Créer un bouton coloré
-                if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
+                # Créer un bouton avec une couleur d'arrière-plan
+                if st.button(label="", key=f'button_{i}_{j}', help=color, 
+                              style=f"background-color: {rgb_str}; border: none; width: 50px; height: 20px; cursor: pointer;"):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
-                
-                # Style pour le bouton de couleur
-                st.markdown(
-                    f"""
-                    <style>
-                    .stButton {{
-                        background-color: {rgb_str} !important;
-                        border: none;
-                        color: black;
-                        cursor: pointer;
-                        width: 50px;
-                        height: 20px;
-                        display: inline-block;
-                    }}
-                    </style>
-                    """, unsafe_allow_html=True
-                )
 
         # Mise à jour de l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
