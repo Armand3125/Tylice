@@ -76,11 +76,13 @@ def traiter_img(img, Nc, Nd, dim_max):
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
             with cols[j]:
-                if st.button(f"{col_name}", key=f"btn_{i}_{j}", 
-                             help=f"RGB: {rgb}", 
-                             style=f"background-color: rgb{rgb}; color: white; padding: 10px; border-radius: 5px;"):
+                if st.button(f"{col_name}", key=f"btn_{i}_{j}"):
                     selected_color = j
                     idx[i] = selected_color
+
+        # Appliquer la couleur sélectionnée
+        if selected_color is not None:
+            st.success(f"Vous avez sélectionné: {col_options[selected_color]}")
 
     # Mise à jour de l'image avec les couleurs sélectionnées
     if st.button("Appliquer les modifications", key="apply_button"):
