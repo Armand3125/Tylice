@@ -72,24 +72,19 @@ def traiter_img(img, Nc, Nd, dim_max):
     for i, cl_idx in enumerate(sorted_cls):
         st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
         
-        # Créer des boutons colorés
+        # Créer des cases à cocher pour chaque couleur
         col_options = cl_proches[i]
         
-        cols = st.columns(len(col_options))  # Créer des colonnes pour les boutons
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            button_color = f"background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); padding: 10px; border: none; border-radius: 5px; color: white; cursor: pointer;"
-
-            # Utiliser une clé unique pour chaque bouton et afficher le bouton
-            if st.button(f"{col_name}", key=f"btn_{i}_{j}"):
+            # Affichage de la case à cocher avec un carré de couleur
+            checkbox_label = f'<span style="display:inline-block; width:20px; height:20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></span>{col_name}'
+            is_checked = st.checkbox(checkbox_label, key=f"chk_{i}_{j}")
+            
+            # Vérification si la case est cochée
+            if is_checked:
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
-
-            # Appliquer le style CSS au bouton
-            st.markdown(
-                f'<style>button[data-baseweb="button"] {{ {button_color} }}</style>',
-                unsafe_allow_html=True,
-            )
 
     # Afficher le message de couleur sélectionnée une seule fois
     if selected_color_message:
