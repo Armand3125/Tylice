@@ -75,10 +75,19 @@ def traiter_img(img, Nc, Nd, dim_max):
         cols = st.columns(len(col_options))  # Créer des colonnes pour les boutons
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            with cols[j]:
-                if st.button(f"{col_name}", key=f"btn_{i}_{j}"):
-                    selected_color = j
-                    idx[i] = selected_color
+            button_color = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
+            
+            # Utiliser st.markdown pour créer un bouton stylisé
+            button_html = f"""
+            <div style="text-align: center;">
+                <button style="background-color: {button_color}; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px;">
+                    {col_name}
+                </button>
+            </div>
+            """
+            if st.markdown(button_html, unsafe_allow_html=True):
+                selected_color = j
+                idx[i] = selected_color
 
         # Appliquer la couleur sélectionnée
         if selected_color is not None:
