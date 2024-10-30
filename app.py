@@ -82,7 +82,8 @@ def traiter_img(img, Nc, Nd, dim_max):
             button_color = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
             
             # Utiliser st.button avec une clé unique pour chaque bouton
-            if st.button(f"{col_name}", key=f"btn_{i}_{j}"):
+            if st.button(f"{col_name}", key=f"btn_{i}_{j}", help=f"Couleur: {col_name}", 
+                         style=f"background-color: {button_color}; color: white;"):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
