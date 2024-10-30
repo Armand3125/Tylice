@@ -30,8 +30,10 @@ def nouvelle_img(img_arr, labels, cl, idx, pal):
         for j in range(img_arr.shape[1]):
             lbl = labels[i * img_arr.shape[1] + j]
             cl_idx = np.where(sorted_cls == lbl)[0][0]
-            color_idx = idx[cl_idx] if cl_idx < len(idx) else 0  # Vérification de la validité de l'indice
-            new_img_arr[i, j] = pal[cl[cl_idx][color_idx]]
+            # Utiliser un index valide pour la palette
+            if cl_idx < len(cl) and idx[cl_idx] < len(cl[cl_idx]):
+                color_name = cl[cl_idx][idx[cl_idx]]
+                new_img_arr[i, j] = pal[color_name]
     return new_img_arr
 
 # Fonction pour traiter et afficher l'image
@@ -78,19 +80,16 @@ def traiter_img(img, Nc, Nd, dim_max):
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
             # Affichage de la case à cocher avec un carré de couleur à droite
-            st.markdown(
-                f'<div style="display: flex; align-items: center;">'
-                f'<input type="checkbox" id="chk_{i}_{j}" onclick="this.click()"/>'  # Case à cocher
-                f'<div style="width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 8px;"></div>'
-                f'<span style="margin-left: 8px;">{col_name}</span>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-
-            # Vérification si la case est cochée
             if st.checkbox("", key=f"chk_{i}_{j}"):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+
+            # Affichage du carré de couleur à droite
+            st.markdown(
+                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 8px;"></div>'
+                f'<span style="margin-left: 8px;">{col_name}</span>',
+                unsafe_allow_html=True
+            )
 
     # Afficher le message de couleur sélectionnée une seule fois
     if selected_color_message:
