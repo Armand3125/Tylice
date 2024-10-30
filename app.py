@@ -37,66 +37,69 @@ def nouvelle_img(img_arr, labels, cl, idx, pal):
 
 # Fonction pour traiter et afficher l'image
 def traiter_img(img, Nc, Nd, dim_max):
-    img = Image.open(img).convert('RGB')
-    img.thumbnail((dim_max, dim_max))
-    img_arr = np.array(img)
+    try:
+        img = Image.open(img).convert('RGB')
+        img.thumbnail((dim_max, dim_max))
+        img_arr = np.array(img)
 
-    pixels = img_arr.reshape(-1, 3)
-    kmeans = KMeans(n_clusters=Nc, random_state=0).fit(pixels)
-    cl_centers = kmeans.cluster_centers_
-    labels = kmeans.labels_
+        pixels = img_arr.reshape(-1, 3)
+        kmeans = KMeans(n_clusters=Nc, random_state=0).fit(pixels)
+        cl_centers = kmeans.cluster_centers_
+        labels = kmeans.labels_
 
-    uniq, counts = np.unique(labels, return_counts=True)
-    cl_counts = dict(zip(uniq, counts))
-    total_px = pixels.shape[0]
-    global sorted_cls
-    sorted_cls = sorted(cl_counts.keys(), key=lambda x: cl_counts[x], reverse=True)
+        uniq, counts = np.unique(labels, return_counts=True)
+        cl_counts = dict(zip(uniq, counts))
+        total_px = pixels.shape[0]
+        global sorted_cls
+        sorted_cls = sorted(cl_counts.keys(), key=lambda x: cl_counts[x], reverse=True)
 
-    cl_proches = [proches_lim(cl_centers[i], pal, Nd) for i in sorted_cls]
-    initial_img_arr = np.zeros_like(img_arr)
-    for i in range(img_arr.shape[0]):
-        for j in range(img_arr.shape[1]):
-            lbl = labels[i * img_arr.shape[1] + j]
-            initial_img_arr[i, j] = cl_centers[lbl]
+        cl_proches = [proches_lim(cl_centers[i], pal, Nd) for i in sorted_cls]
+        initial_img_arr = np.zeros_like(img_arr)
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                lbl = labels[i * img_arr.shape[1] + j]
+                initial_img_arr[i, j] = cl_centers[lbl]
 
-    # Afficher l'image initiale
-    st.image(initial_img_arr.astype('uint8'), caption="Image Initiale", use_column_width=True)
+        # Afficher l'image initiale
+        st.image(initial_img_arr.astype('uint8'), caption="Image Initiale", use_column_width=True)
 
-    # Initialiser l'index de la couleur sélectionnée
-    if 'selected_colors' not in st.session_state:
-        st.session_state.selected_colors = [None] * len(sorted_cls)  # Couleurs initiales
+        # Initialiser l'index de la couleur sélectionnée
+        if 'selected_colors' not in st.session_state:
+            st.session_state.selected_colors = [None] * len(sorted_cls)  # Couleurs initiales
 
-    # Variable pour stocker le message de sélection
-    selected_color_message = ""
+        # Variable pour stocker le message de sélection
+        selected_color_message = ""
 
-    # Sélection des couleurs pour chaque cluster
-    for i, cl_idx in enumerate(sorted_cls):
-        st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
-        
-        # Créer des colonnes pour le bouton de couleur
-        col_options = cl_proches[i]
+        # Sélection des couleurs pour chaque cluster
+        for i, cl_idx in enumerate(sorted_cls):
+            st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
+            
+            # Créer une liste de choix pour les couleurs proches
+            col_options = cl_proches[i]
+            selected_color = st.selectbox(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'selectbox_{i}')
+            
+            # Mettre à jour la sélection de couleurs
+            st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
+            selected_color_message = f"Vous avez sélectionné: {selected_color}"
+            
+            # Afficher le carré de couleur à droite de la case à cocher
+            rgb = pal[selected_color]
+            st.markdown(
+                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>'
+                f'<span style="margin-left: 4px; vertical-align: middle;">{selected_color}</span>',
+                unsafe_allow_html=True
+            )
 
-        cols = st.columns(len(col_options))
-        for j, col_name in enumerate(col_options):
-            rgb = pal[col_name]
+        # Afficher le message de couleur sélectionnée une seule fois
+        if selected_color_message:
+            st.success(selected_color_message)
 
-            with cols[j]:
-                # Affichage du bouton de couleur
-                if st.button(f"{col_name}", key=f"btn_{i}_{j}", help=f"Choisissez {col_name}", style={"backgroundColor": f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"}):
-                    # Mémoriser la couleur sélectionnée
-                    for k in range(len(col_options)):
-                        if k != j:  # Ne pas désélectionner la case actuellement sélectionnée
-                            st.session_state.selected_colors[i] = None
-                    st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
-                    selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+        # Mise à jour de l'image avec les couleurs sélectionnées
+        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
+        st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", use_column_width=True)
 
-    # Afficher le message de couleur sélectionnée une seule fois
-    if selected_color_message:
-        st.success(selected_color_message)
-
-    # Mise à jour de l'image avec les couleurs sélectionnées
-    new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-    st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", use_column_width=True)
+    except Exception as e:
+        st.error(f"Une erreur est survenue : {e}")
 
 # Widgets d'entrée
 st.title("Traitement d'Image avec Palette de Couleurs")
