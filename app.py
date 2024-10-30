@@ -1,13 +1,11 @@
-# app.py
 import streamlit as st
 from sklearn.cluster import KMeans
 from scipy.spatial import distance
 from PIL import Image
 import numpy as np
 import io
-import os
 
-# Définition de la palette de couleurs
+# Dictionnaire de couleurs
 pal = {
     "Noir_Charbon": (0, 0, 0), "Blanc_Jade": (255, 255, 255),
     "Jaune_Or": (228, 189, 104), "Bleu_Cyan": (0, 134, 214),
@@ -18,7 +16,7 @@ pal = {
     "Gris_Argent": (166, 169, 170), "Violet_Basic": (94, 67, 183),
 }
 
-# Fonction pour trouver les couleurs les plus proches dans la palette
+# Fonction pour trouver les couleurs proches dans la palette
 def proches(c, pal):
     dists = [(n, distance.euclidean(c, col)) for n, col in pal.items()]
     return sorted(dists, key=lambda x: x[1])
@@ -26,7 +24,7 @@ def proches(c, pal):
 def proches_lim(c, pal, n):
     return [n for n, _ in proches(c, pal)[:n]]
 
-# Fonction pour générer une nouvelle image
+# Créer une nouvelle image avec les couleurs de la palette
 def nouvelle_img(img_arr, labels, cl, idx, pal):
     new_img_arr = np.zeros_like(img_arr)
     for i in range(img_arr.shape[0]):
@@ -37,13 +35,12 @@ def nouvelle_img(img_arr, labels, cl, idx, pal):
             new_img_arr[i, j] = pal[cl[cl_idx][color_idx]]
     return new_img_arr
 
-# Fonction principale pour traiter l'image
-def traiter_img(image, Nc, Nd, dim_max):
-    img = Image.open(image).convert('RGB')
+# Fonction pour traiter et afficher l'image
+def traiter_img(img, Nc, Nd, dim_max):
+    img = Image.open(img).convert('RGB')
     img.thumbnail((dim_max, dim_max))
     img_arr = np.array(img)
 
-    # K-means clustering
     pixels = img_arr.reshape(-1, 3)
     kmeans = KMeans(n_clusters=Nc, random_state=0).fit(pixels)
     cl_centers = kmeans.cluster_centers_
@@ -62,34 +59,40 @@ def traiter_img(image, Nc, Nd, dim_max):
             lbl = labels[i * img_arr.shape[1] + j]
             initial_img_arr[i, j] = cl_centers[lbl]
 
-    initial_img = Image.fromarray(initial_img_arr.astype('uint8'))
-    return initial_img, cl_proches, labels
+    # Afficher l'image initiale
+    st.image(initial_img_arr.astype('uint8'), caption="Image Initiale", use_column_width=True)
 
-# Interface utilisateur avec Streamlit
-st.title("Clustering de Couleurs d'Image")
-
-# Chargement de l'image
-uploaded_file = st.file_uploader("Choisissez une image", type=["jpg", "jpeg", "png"])
-Nc = st.slider("Nombre de clusters:", 2, 7, 4)
-Nd = st.slider("Nombre de choix de couleurs:", 2, len(pal), 6)
-dim_max = st.number_input("Dimension maximale de l'image:", value=400, step=50)
-
-if uploaded_file is not None:
-    initial_img, cl_proches, labels = traiter_img(uploaded_file, Nc, Nd, dim_max)
-
-    # Affichage de l'image initiale avec clustering
-    st.image(initial_img, caption="Image de base avec clustering", use_column_width=True)
-
-    # Choix de couleurs pour chaque cluster
     idx = [0] * len(sorted_cls)
-    for i, cl_idx in enumerate(sorted_cls):
-        st.write(f"Cluster {i+1}")
-        color_buttons = []
-        for j, col_name in enumerate(cl_proches[i]):
-            color_buttons.append(st.button(col_name, key=f"color_{i}_{j}"))
 
-        # Générer une image avec la couleur sélectionnée
-        if st.button("Appliquer les modifications"):
-            new_img_arr = nouvelle_img(np.array(initial_img), labels, cl_proches, idx, pal)
-            new_img = Image.fromarray(new_img_arr.astype('uint8'))
-            st.image(new_img, caption="Image mise à jour", use_column_width=True)
+    # Sélection des couleurs pour chaque cluster
+    for i, cl_idx in enumerate(sorted_cls):
+        st.write(f"Cluster {i+1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
+        
+        col_options = []
+        for j, col_name in enumerate(cl_proches[i]):
+            color_hex = "#{:02x}{:02x}{:02x}".format(*pal[col_name])
+            col_options.append((j, col_name, color_hex))
+        
+        selected_color = st.radio(
+            f"Choisissez une couleur pour le cluster {i+1}",
+            col_options,
+            index=0,
+            format_func=lambda x: f"{col_options[x][1]} - {col_options[x][2]}"
+        )
+        idx[i] = selected_color[0]
+
+    # Mise à jour de l'image avec les couleurs sélectionnées
+    if st.button("Appliquer les modifications", key="apply_button"):
+        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, idx, pal)
+        st.image(new_img_arr.astype('uint8'), caption="Image Modifiée", use_column_width=True)
+
+# Widgets d'entrée
+st.title("Traitement d'Image avec Palette de Couleurs")
+uploaded_file = st.file_uploader("Choisissez une image", type=["jpg", "jpeg", "png"])
+Nc = st.slider("Nombre de Clusters", 2, 7, 4)
+Nd = st.slider("Nombre de Couleurs dans la Palette", 2, len(pal), 6)
+dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_value=1000, value=400, step=50)
+
+# Lancer le traitement d'image si un fichier est téléchargé
+if uploaded_file is not None:
+    traiter_img(uploaded_file, Nc, Nd, dim_max)
