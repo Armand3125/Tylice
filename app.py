@@ -79,8 +79,8 @@ def traiter_img(img, Nc, Nd, dim_max):
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
-
-                # Créer un bouton avec une couleur de fond
+                
+                # Utiliser st.markdown pour afficher un bouton de couleur
                 if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
