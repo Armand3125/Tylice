@@ -76,17 +76,18 @@ def traiter_img(img, Nc, Nd, dim_max):
 
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
-            selected_color = st.radio(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'radio_{i}')
 
-            # Mettre à jour la sélection de couleurs
-            st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
-
-            # Afficher le carré de couleur à côté de chaque option
-            rgb = pal[selected_color]
-            st.markdown(
-                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>',
-                unsafe_allow_html=True
-            )
+            # Afficher les cases à cocher avec le carré de couleur à côté
+            for color_name in col_options:
+                rgb = pal[color_name]
+                checked = st.checkbox(f"{color_name}", key=f'checkbox_{i}_{color_name}')
+                if checked:
+                    st.session_state.selected_colors[i] = color_name  # Mémoriser la couleur sélectionnée
+                # Afficher le carré de couleur à côté de chaque case
+                st.markdown(
+                    f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 4px; vertical-align: middle;"></div>',
+                    unsafe_allow_html=True
+                )
 
         # Mise à jour de l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
@@ -110,4 +111,3 @@ if uploaded_file is not None:
 if st.button("Rafraîchir l'image"):
     if uploaded_file is not None:
         traiter_img(uploaded_file, Nc, Nd, dim_max)
-
