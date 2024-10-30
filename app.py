@@ -76,7 +76,7 @@ def traiter_img(img, Nc, Nd, dim_max):
 
             # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
-            selected_color = st.selectbox(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'selectbox_{i}')
+            selected_color = st.radio(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'radio_{i}')
 
             # Mettre à jour la sélection de couleurs
             st.session_state.selected_colors[i] = col_options.index(selected_color)  # Mémoriser la couleur sélectionnée
