@@ -90,7 +90,11 @@ def traiter_img(img, Nc, Nd, dim_max):
 
                 # Si la case à cocher est sélectionnée
                 if checkbox_value:
-                    st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
+                    # Désélectionner toutes les autres cases dans le même cluster
+                    for k in range(len(cl_proches[i])):
+                        if k != j:  # Si ce n'est pas la case actuelle
+                            st.session_state.selected_colors[i] = k  # Réinitialiser l'ancienne sélection
+                    st.session_state.selected_colors[i] = j  # Mémoriser la nouvelle couleur sélectionnée
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
                 else:
                     # Si non sélectionnée, vérifier si c'est l'ancienne sélection
