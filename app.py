@@ -77,7 +77,7 @@ def traiter_img(img, Nc, Nd, dim_max):
             # Afficher les cases à cocher avec les carrés de couleur
             selected_color = st.radio(f"Sélectionnez une couleur pour le Cluster {i + 1}", options=col_options, key=f'radio_{i}')
 
-            # Affichage des couleurs avec carrés
+            # Afficher les carrés de couleur pour chaque case à cocher
             for color in col_options:
                 rgb = pal[color]
                 st.markdown(
