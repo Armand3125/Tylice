@@ -3,7 +3,6 @@ from sklearn.cluster import KMeans
 from scipy.spatial import distance
 from PIL import Image
 import numpy as np
-import io
 
 # Dictionnaire de couleurs
 pal = {
@@ -79,10 +78,10 @@ def traiter_img(img, Nc, Nd, dim_max):
         cols = st.columns(len(col_options))  # Créer des colonnes pour les boutons
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
-            button_color = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
+            button_color = f"background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); padding: 10px; border: none; border-radius: 5px; color: white; cursor: pointer;"
             
-            # Utiliser st.button avec une clé unique pour chaque bouton
-            if st.button(f"{col_name}", key=f"btn_{i}_{j}"):
+            # Créer un bouton coloré en utilisant st.markdown
+            if st.markdown(f'<button style="{button_color}">{col_name}</button>', unsafe_allow_html=True):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                 selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
 
