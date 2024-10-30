@@ -84,6 +84,7 @@ def traiter_img(img, Nc, Nd, dim_max):
                     f'<div style="display: flex; align-items: center; margin-bottom: 5px;">'
                     f'<input type="radio" name="color_{i}" value="{color}" {"checked" if selected_color == color else ""} style="margin-right: 8px;">'
                     f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-right: 8px;"></div>'
+                    f'{color}'
                     f'</div>',
                     unsafe_allow_html=True
                 )
