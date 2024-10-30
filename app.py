@@ -80,16 +80,20 @@ def traiter_img(img, Nc, Nd, dim_max):
         for j, col_name in enumerate(col_options):
             rgb = pal[col_name]
             # Affichage de la case à cocher à gauche du carré de couleur
-            if st.checkbox("", key=f"chk_{i}_{j}"):
-                st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
-                selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+            col1, col2 = st.columns([1, 5])  # Créer deux colonnes
 
-            # Affichage du carré de couleur à droite de la case à cocher
-            st.markdown(
-                f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 8px; vertical-align: middle;"></div>'
-                f'<span style="margin-left: 8px; vertical-align: middle;">{col_name}</span>',
-                unsafe_allow_html=True
-            )
+            with col1:
+                if st.checkbox("", key=f"chk_{i}_{j}"):
+                    st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
+                    selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+
+            with col2:
+                # Affichage du carré de couleur à droite de la case à cocher
+                st.markdown(
+                    f'<div style="display: inline-block; width: 20px; height: 20px; background-color: rgb({rgb[0]}, {rgb[1]}, {rgb[2]}); margin-left: 8px; vertical-align: middle;"></div>'
+                    f'<span style="margin-left: 8px; vertical-align: middle;">{col_name}</span>',
+                    unsafe_allow_html=True
+                )
 
     # Afficher le message de couleur sélectionnée une seule fois
     if selected_color_message:
