@@ -30,7 +30,7 @@ def nouvelle_img(img_arr, labels, cl, idx, pal):
         for j in range(img_arr.shape[1]):
             lbl = labels[i * img_arr.shape[1] + j]
             cl_idx = np.where(sorted_cls == lbl)[0][0]
-            if cl_idx < len(cl) and idx[cl_idx] < len(cl[cl_idx]):
+            if cl_idx < len(cl) and idx[cl_idx] is not None and idx[cl_idx] < len(cl[cl_idx]):
                 color_name = cl[cl_idx][idx[cl_idx]]
                 new_img_arr[i, j] = pal[color_name]
     return new_img_arr
@@ -91,17 +91,15 @@ def traiter_img(img, Nc, Nd, dim_max):
                 # Si la case à cocher est sélectionnée
                 if checkbox_value:
                     # Mémoriser la couleur sélectionnée et désélectionner les autres
-                    st.session_state.selected_colors[i] = j
+                    for k in range(len(col_options)):
+                        st.session_state.selected_colors[i] = None  # Deselect all other checkboxes in the cluster
+                    st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+
                 else:
                     # Vérifier si cette couleur était sélectionnée et réinitialiser si nécessaire
                     if st.session_state.selected_colors[i] == j:
                         st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
-
-                # Deselect all other checkboxes in the current cluster
-                for k in range(len(col_options)):
-                    if k != j and st.session_state.selected_colors[i] == k:
-                        st.session_state.selected_colors[i] = None  # Deselect other checkboxes
 
             with col2:
                 # Affichage du carré de couleur à droite de la case à cocher
