@@ -84,7 +84,7 @@ def traiter_img(img, Nc, Nd, dim_max):
                 # Vérifier si la couleur actuelle est déjà sélectionnée
                 is_checked = (st.session_state.selected_colors[i] == j)
                 checkbox_label = f"Checkbox {i}_{j}"
-                
+
                 # Case à cocher
                 checkbox_value = st.checkbox("", value=is_checked, key=checkbox_label)
 
@@ -92,12 +92,10 @@ def traiter_img(img, Nc, Nd, dim_max):
                 if checkbox_value:
                     st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
                     selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
-                    
-            # Désactiver les autres cases dans le même cluster
-            for k in range(len(col_options)):
-                if k != j:
-                    if f"Checkbox {i}_{k}" in st.session_state:
-                        st.session_state[f"Checkbox {i}_{k}"] = False  # Désactiver l'autre case
+                else:
+                    # Si non sélectionnée, vérifier si c'est l'ancienne sélection
+                    if st.session_state.selected_colors[i] == j:
+                        st.session_state.selected_colors[i] = None  # Réinitialiser l'ancienne sélection
 
             with col2:
                 # Affichage du carré de couleur à droite de la case à cocher
