@@ -66,6 +66,9 @@ def traiter_img(img, Nc, Nd, dim_max):
     if 'selected_colors' not in st.session_state:
         st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
 
+    # Variable pour stocker le message de sélection
+    selected_color_message = ""
+
     # Sélection des couleurs pour chaque cluster
     for i, cl_idx in enumerate(sorted_cls):
         st.write(f"Cluster {i+1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
@@ -90,7 +93,11 @@ def traiter_img(img, Nc, Nd, dim_max):
             # Si le bouton est cliqué, mettre à jour l'état de la couleur sélectionnée
             if st.markdown(button_html, unsafe_allow_html=True):
                 st.session_state.selected_colors[i] = j  # Mémoriser la couleur sélectionnée
-                st.success(f"Vous avez sélectionné: {col_name}")
+                selected_color_message = f"Vous avez sélectionné: {col_name}"  # Mettre à jour le message
+
+    # Afficher le message de couleur sélectionnée une seule fois
+    if selected_color_message:
+        st.success(selected_color_message)
 
     # Mise à jour de l'image avec les couleurs sélectionnées
     if st.button("Appliquer les modifications", key="apply_button"):
