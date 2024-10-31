@@ -59,7 +59,7 @@ def traiter_img(img, Nc, Nd, dim_max):
                     st.session_state.selected_colors[i] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
-                    st.experimental_rerun()  # Rerun to instantly update display after selection
+                    st.experimental_set_query_params(dummy=str(j))  # Trigger a rerun
 
                 cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
