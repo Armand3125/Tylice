@@ -49,18 +49,26 @@ def traiter_img(img, Nc, Nd, dim_max):
             st.write(f"Cluster {i + 1}")
             col_options = cl_proches[i]
             cols = st.columns(len(col_options))
+
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
+                
+                # Highlight selected button using a thicker border
                 button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
-                button_style += "border: 3px solid red;" if st.session_state.selected_colors[i] == j else "border: 1px solid black;"
+                if st.session_state.selected_colors[i] == j:
+                    button_style += " border: 3px solid red;"
+                else:
+                    button_style += " border: 1px solid black;"
 
+                # Set the session state directly without waiting for the next rerun
                 if cols[j].button(label="", key=f'button_{i}_{j}', help=color, use_container_width=True):
                     st.session_state.selected_colors[i] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
-                    st.experimental_set_query_params(dummy=str(j))  # Trigger a rerun
+                    st.experimental_set_query_params(update=str(i) + str(j))  # Force an immediate rerun to sync display
 
+                # Display color and style for each button
                 cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
