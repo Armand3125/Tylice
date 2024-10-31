@@ -15,7 +15,7 @@ pal = {
     "Gris_Argent": (166, 169, 170), "Violet_Basic": (94, 67, 183),
 }
 
-# Fonction pour trouver les couleurs proches dans la palette
+# Function to find nearest colors in the palette
 def proches(c, pal):
     dists = [(n, distance.euclidean(c, col)) for n, col in pal.items()]
     return sorted(dists, key=lambda x: x[1])
@@ -23,19 +23,16 @@ def proches(c, pal):
 def proches_lim(c, pal, n):
     return [n for n, _ in proches(c, pal)[:n]]
 
-# Créer une nouvelle image avec les couleurs de la palette
+# Optimized function to create a new image with selected palette colors
 def nouvelle_img(img_arr, labels, cl, idx, pal):
-    new_img_arr = np.zeros_like(img_arr)
-    for i in range(img_arr.shape[0]):
-        for j in range(img_arr.shape[1]):
-            lbl = labels[i * img_arr.shape[1] + j]
-            cl_idx = np.where(sorted_cls == lbl)[0][0]
-            if cl_idx < len(cl) and idx[cl_idx] is not None and idx[cl_idx] < len(cl[cl_idx]):
-                color_name = cl[cl_idx][idx[cl_idx]]
-                new_img_arr[i, j] = pal[color_name]
-    return new_img_arr
+    # Create a lookup table for color mappings
+    color_map = {i: pal[cl[i][idx[i]]] for i in range(len(cl))}
+    
+    # Apply the color map directly based on cluster labels
+    img_mapped = np.array([color_map[lbl] for lbl in labels])
+    return img_mapped.reshape(img_arr.shape)
 
-# Fonction pour traiter et afficher l'image
+# Function to process and display the image
 def traiter_img(img, Nc, Nd, dim_max):
     try:
         img = Image.open(img).convert('RGB')
@@ -55,71 +52,60 @@ def traiter_img(img, Nc, Nd, dim_max):
 
         cl_proches = [proches_lim(cl_centers[i], pal, Nd) for i in sorted_cls]
 
-        # Initialiser l'index de la couleur sélectionnée
+        # Initialize the index of selected color if not already in session state
         if 'selected_colors' not in st.session_state:
-            st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
+            st.session_state.selected_colors = [0] * len(sorted_cls)
 
-        # Assurez-vous que le nombre d'index correspond au nombre de clusters
+        # Ensure the number of indexes matches the number of clusters
         if len(st.session_state.selected_colors) < Nc:
             st.session_state.selected_colors = [0] * Nc
 
-        # Afficher l'image modifiée au-dessus des boutons
+        # Only update image when selections change
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
         st.session_state.modified_image = new_img_arr.astype('uint8')
 
-        # Sélection des couleurs pour chaque cluster
+        # Color selection UI for each cluster
         for i, cl_idx in enumerate(sorted_cls):
             st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
-
-            # Créer une liste de choix pour les couleurs proches
             col_options = cl_proches[i]
 
-            # Utiliser une colonne pour afficher les boutons et les couleurs côte à côte
+            # Use columns to display buttons and color options side-by-side
             cols = st.columns(len(col_options))
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
-                # Appliquer une bordure si le bouton est sélectionné
-                border_style = "solid 2px red" if st.session_state.selected_colors[i] == j else "solid 1px black"
-                
-                # Bouton coloré avec HTML et surbrillance pour le bouton sélectionné
-                button_html = f'''
-                <button style="background-color: {rgb_str}; width: 50px; height: 20px; 
-                               border: {border_style}; cursor: pointer;" 
-                        onclick="document.getElementById('button_{i}_{j}').click()">
-                </button>
-                '''
-                cols[j].markdown(button_html + f'<input type="hidden" id="button_{i}_{j}" />', unsafe_allow_html=True)
+                # Highlight selected color with a different border
+                button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
+                button_style += "border: 3px solid red;" if st.session_state.selected_colors[i] == j else "border: 1px solid black;"
 
-                # Action sur le bouton
-                if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
-                    # Mettre à jour la sélection de couleurs
-                    st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
-
-                    # Mettre à jour l'image avec la nouvelle sélection de couleur
+                if cols[j].button(label="", key=f'button_{i}_{j}', help=color, use_container_width=True):
+                    st.session_state.selected_colors[i] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
+
+                # Color display for button
+                cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {e}")
 
-# Widgets d'entrée
+# Widgets for input
 st.title("Traitement d'Image avec Palette de Couleurs")
 uploaded_file = st.file_uploader("Choisissez une image", type=["jpg", "jpeg", "png"])
 Nc = st.slider("Nombre de Clusters", 2, 7, 4)
 Nd = st.slider("Nombre de Couleurs dans la Palette", 2, len(pal), 6)
 dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_value=1000, value=400, step=50)
 
-# Lancer le traitement d'image si un fichier est téléchargé
+# Trigger image processing if a file is uploaded
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
 
-# Afficher l'image modifiée en haut de la page
+# Display modified image at the top of the page
 if 'modified_image' in st.session_state:
     st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(0.6 * dim_max))
 
-# Bouton pour rafraîchir l'image
+# Refresh button to reprocess the image
 if st.button("Rafraîchir l'image"):
     if uploaded_file is not None:
         traiter_img(uploaded_file, Nc, Nd, dim_max)
