@@ -24,12 +24,11 @@ def proches_lim(c, pal, n):
     return [n for n, _ in proches(c, pal)[:n]]
 
 # Optimized function to create a new image with selected palette colors
-def nouvelle_img(img_arr, labels, cl, idx, pal):
-    # Create a lookup table for color mappings
-    color_map = {i: pal[cl[i][idx[i]]] for i in range(len(cl))}
-    
-    # Apply the color map directly based on cluster labels
-    img_mapped = np.array([color_map[lbl] for lbl in labels])
+def nouvelle_img(img_arr, labels, cl_proches, selected_colors, pal):
+    # Assign colors based on selected palette color for each cluster
+    color_map = {i: pal[cl_proches[i][selected_colors[i]]] for i in range(len(cl_proches))}
+    # Map each pixel in the image to its corresponding cluster color
+    img_mapped = np.array([color_map[label] for label in labels])
     return img_mapped.reshape(img_arr.shape)
 
 # Function to process and display the image
@@ -44,47 +43,41 @@ def traiter_img(img, Nc, Nd, dim_max):
         cl_centers = kmeans.cluster_centers_
         labels = kmeans.labels_
 
-        uniq, counts = np.unique(labels, return_counts=True)
-        cl_counts = dict(zip(uniq, counts))
-        total_px = pixels.shape[0]
-        global sorted_cls
-        sorted_cls = sorted(cl_counts.keys(), key=lambda x: cl_counts[x], reverse=True)
-
-        cl_proches = [proches_lim(cl_centers[i], pal, Nd) for i in sorted_cls]
+        # Get sorted colors closest to cluster centers
+        cl_proches = [proches_lim(cl_centers[i], pal, Nd) for i in range(Nc)]
 
         # Initialize the index of selected color if not already in session state
         if 'selected_colors' not in st.session_state:
-            st.session_state.selected_colors = [0] * len(sorted_cls)
-
-        # Ensure the number of indexes matches the number of clusters
-        if len(st.session_state.selected_colors) < Nc:
-            st.session_state.selected_colors = [0] * Nc
+            st.session_state.selected_colors = [0] * Nc  # Initialize with first color
 
         # Only update image when selections change
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
         st.session_state.modified_image = new_img_arr.astype('uint8')
 
         # Color selection UI for each cluster
-        for i, cl_idx in enumerate(sorted_cls):
-            st.write(f"Cluster {i + 1} - {(counts[cl_idx] / total_px) * 100:.2f}%")
-            col_options = cl_proches[i]
+        for i in range(Nc):
+            st.write(f"Cluster {i + 1}")
 
-            # Use columns to display buttons and color options side-by-side
+            # Create selection buttons for each color in the cluster palette
+            col_options = cl_proches[i]
             cols = st.columns(len(col_options))
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
-                # Highlight selected color with a different border
+                # Highlight selected color with a border
                 button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
                 button_style += "border: 3px solid red;" if st.session_state.selected_colors[i] == j else "border: 1px solid black;"
 
+                # Color button with Streamlit action
                 if cols[j].button(label="", key=f'button_{i}_{j}', help=color, use_container_width=True):
+                    # Update selected color index for the cluster
                     st.session_state.selected_colors[i] = j
+                    # Update image with new selected color
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
 
-                # Color display for button
+                # Display the color block with styling
                 cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
