@@ -79,8 +79,20 @@ def traiter_img(img, Nc, Nd, dim_max):
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
+                
+                # Appliquer une bordure si le bouton est sélectionné
+                border_style = "solid 2px red" if st.session_state.selected_colors[i] == j else "solid 1px black"
+                
+                # Bouton coloré avec HTML et surbrillance pour le bouton sélectionné
+                button_html = f'''
+                <button style="background-color: {rgb_str}; width: 50px; height: 20px; 
+                               border: {border_style}; cursor: pointer;" 
+                        onclick="document.getElementById('button_{i}_{j}').click()">
+                </button>
+                '''
+                cols[j].markdown(button_html + f'<input type="hidden" id="button_{i}_{j}" />', unsafe_allow_html=True)
 
-                # Créer un bouton coloré avec HTML
+                # Action sur le bouton
                 if cols[j].button(label="", key=f'button_{i}_{j}', help=color):
                     # Mettre à jour la sélection de couleurs
                     st.session_state.selected_colors[i] = j  # Mémoriser l'index de la couleur sélectionnée
@@ -88,12 +100,6 @@ def traiter_img(img, Nc, Nd, dim_max):
                     # Mettre à jour l'image avec la nouvelle sélection de couleur
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
-
-                # Afficher la couleur à droite du bouton
-                cols[j].markdown(
-                    f'<div style="background-color: {rgb_str}; width: 50px; height: 20px; display: inline-block; margin-left: 5px;"></div>',
-                    unsafe_allow_html=True
-                )
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {e}")
