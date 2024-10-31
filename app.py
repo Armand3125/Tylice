@@ -39,10 +39,10 @@ def traiter_img(img, Nc, Nd, dim_max):
         uniq, counts = np.unique(labels, return_counts=True)
         total_px = pixels.shape[0]
         cl_counts = dict(zip(uniq, counts))
-        
+
         sorted_cls = sorted(cl_counts.items(), key=lambda x: x[1], reverse=True)
 
-        cl_proches = [proches_lim(kmeans.cluster_centers[i], pal, Nd) for i in cl_counts.keys()]
+        cl_proches = [proches_lim(kmeans.cluster_centers_[i], pal, Nd) for i in cl_counts.keys()]
 
         if 'selected_colors' not in st.session_state:
             st.session_state.selected_colors = [0] * Nc
@@ -87,4 +87,3 @@ if uploaded_file is not None:
 
 if 'modified_image' in st.session_state:
     st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(0.6 * dim_max))
-
