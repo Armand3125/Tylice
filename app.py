@@ -59,6 +59,10 @@ def traiter_img(img, Nc, Nd, dim_max):
         if 'selected_colors' not in st.session_state:
             st.session_state.selected_colors = [0] * len(sorted_cls)  # Couleurs initiales
 
+        # Assurez-vous que le nombre d'index correspond au nombre de clusters
+        if len(st.session_state.selected_colors) < Nc:
+            st.session_state.selected_colors = [0] * Nc
+
         # Afficher l'image modifiée au-dessus des boutons
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
         st.session_state.modified_image = new_img_arr.astype('uint8')
