@@ -34,10 +34,15 @@ def traiter_img(img, Nc, Nd, dim_max):
 
         pixels = img_arr.reshape(-1, 3)
         kmeans = KMeans(n_clusters=Nc, random_state=0).fit(pixels)
-        cl_centers = kmeans.cluster_centers_
         labels = kmeans.labels_
 
-        cl_proches = [proches_lim(cl_centers[i], pal, Nd) for i in range(Nc)]
+        uniq, counts = np.unique(labels, return_counts=True)
+        total_px = pixels.shape[0]
+        cl_counts = dict(zip(uniq, counts))
+        
+        sorted_cls = sorted(cl_counts.items(), key=lambda x: x[1], reverse=True)
+
+        cl_proches = [proches_lim(kmeans.cluster_centers[i], pal, Nd) for i in cl_counts.keys()]
 
         if 'selected_colors' not in st.session_state:
             st.session_state.selected_colors = [0] * Nc
@@ -45,9 +50,10 @@ def traiter_img(img, Nc, Nd, dim_max):
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
         st.session_state.modified_image = new_img_arr.astype('uint8')
 
-        for i in range(Nc):
-            st.write(f"Cluster {i + 1}")
-            col_options = cl_proches[i]
+        for cluster_idx, (cl, count) in enumerate(sorted_cls):
+            percentage = (count / total_px) * 100
+            st.write(f"Cluster {cluster_idx + 1} - {percentage:.2f}%")
+            col_options = cl_proches[cl]
             cols = st.columns(len(col_options))
 
             for j, color in enumerate(col_options):
@@ -55,16 +61,15 @@ def traiter_img(img, Nc, Nd, dim_max):
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
                 button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
-                if st.session_state.selected_colors[i] == j:
+                if st.session_state.selected_colors[cluster_idx] == j:
                     button_style += " border: 3px solid red;"
                 else:
                     button_style += " border: 1px solid black;"
 
-                if cols[j].button(label="", key=f'button_{i}_{j}', help=color, use_container_width=True):
-                    st.session_state.selected_colors[i] = j
+                if cols[j].button(label="", key=f'button_{cluster_idx}_{j}', help=color, use_container_width=True):
+                    st.session_state.selected_colors[cluster_idx] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
-                    st.experimental_set_query_params(update=str(i) + str(j))
 
                 cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
@@ -82,3 +87,4 @@ if uploaded_file is not None:
 
 if 'modified_image' in st.session_state:
     st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(0.6 * dim_max))
+
