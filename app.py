@@ -54,21 +54,18 @@ def traiter_img(img, Nc, Nd, dim_max):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
-                # Highlight selected button using a thicker border
                 button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
                 if st.session_state.selected_colors[i] == j:
                     button_style += " border: 3px solid red;"
                 else:
                     button_style += " border: 1px solid black;"
 
-                # Set the session state directly without waiting for the next rerun
                 if cols[j].button(label="", key=f'button_{i}_{j}', help=color, use_container_width=True):
                     st.session_state.selected_colors[i] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
-                    st.experimental_set_query_params(update=str(i) + str(j))  # Force an immediate rerun to sync display
+                    st.experimental_set_query_params(update=str(i) + str(j))
 
-                # Display color and style for each button
                 cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
@@ -85,7 +82,3 @@ if uploaded_file is not None:
 
 if 'modified_image' in st.session_state:
     st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(0.6 * dim_max))
-
-if st.button("Rafraîchir l'image"):
-    if uploaded_file is not None:
-        traiter_img(uploaded_file, Nc, Nd, dim_max)
