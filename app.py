@@ -29,7 +29,7 @@ def nouvelle_img(img_arr, labels, cl_proches, selected_colors, pal):
     img_mapped = np.array([color_map[label] for label in labels])
     return img_mapped.reshape(img_arr.shape)
 
-# Traiter l'image pour clustering et application de la palette
+@st.cache_data
 def traiter_img(img, Nc, Nd, dim_max):
     try:
         img = Image.open(img).convert('RGB')
@@ -47,15 +47,7 @@ def traiter_img(img, Nc, Nd, dim_max):
         sorted_cls = sorted(cl_counts.items(), key=lambda x: x[1], reverse=True)
         cl_proches = [proches_lim(kmeans.cluster_centers_[i], pal, Nd) for i in cl_counts.keys()]
 
-        if 'selected_colors' not in st.session_state:
-            st.session_state.selected_colors = [0] * Nc
-        elif len(st.session_state.selected_colors) != Nc:
-            st.session_state.selected_colors = [0] * Nc
-
-        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-        st.session_state.modified_image = new_img_arr.astype('uint8')
-
-        return sorted_cls, total_px, cl_proches, img_arr, labels  # Ajoutez labels au retour
+        return img_arr, labels, sorted_cls, total_px, cl_proches  # Retourne les valeurs nécessaires
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {e}")
@@ -70,16 +62,19 @@ Nd = st.slider("Nombre de Couleurs dans la Palette", 2, len(pal), 6)
 # Fixer la dimension maximale de l'image à 400
 dim_max = 400  
 
-sorted_cls, total_px, cl_proches, img_arr, labels = None, None, None, None, None  # Initialiser ces variables
+img_arr, labels, sorted_cls, total_px, cl_proches = None, None, None, None, None  # Initialiser ces variables
 
 if uploaded_file is not None:
-    sorted_cls, total_px, cl_proches, img_arr, labels = traiter_img(uploaded_file, Nc, Nd, dim_max)
+    img_arr, labels, sorted_cls, total_px, cl_proches = traiter_img(uploaded_file, Nc, Nd, dim_max)
 
-if 'modified_image' in st.session_state:
-    st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(1.5 * dim_max))
+if 'modified_image' not in st.session_state:
+    st.session_state.modified_image = None
 
 # Vérifiez si sorted_cls et total_px ne sont pas None avant de les utiliser
 if sorted_cls is not None and total_px is not None and labels is not None:
+    if st.session_state.modified_image is not None:
+        st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(1.5 * dim_max))
+
     for idx, (cl, count) in enumerate(sorted_cls):
         percentage = (count / total_px) * 100
         st.write(f"Cluster {idx + 1} - {percentage:.2f}%")
@@ -102,6 +97,9 @@ if sorted_cls is not None and total_px is not None and labels is not None:
             # Utiliser un bouton Streamlit
             button_key = f'button_{idx}_{j}_{color}'
             if cols[j].button(label="", key=button_key, help=color):
+                # Ne pas recalculer l'image à chaque clic; seulement stocker la sélection
                 st.session_state.selected_colors[cl] = j
+                # Mettre à jour l'image seulement lorsque tous les choix sont faits
                 new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                 st.session_state.modified_image = new_img_arr.astype('uint8')
+                st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(1.5 * dim_max))  # Afficher immédiatement la nouvelle image
