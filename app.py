@@ -65,15 +65,17 @@ def traiter_img(img, Nc, Nd, dim_max):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
 
-                # Afficher un rectangle coloré comme fond de bouton
-                cols[j].markdown(f"<div style='background-color: {rgb_str}; width: 40px; height: 20px; border-radius: 5px; display: inline-block;'></div>", unsafe_allow_html=True)
+                # Combiner le rectangle et le bouton dans la même colonne
+                with cols[j]:
+                    # Afficher un rectangle coloré comme fond de bouton
+                    st.markdown(f"<div style='background-color: {rgb_str}; width: 40px; height: 20px; border-radius: 5px; display: inline-block;'></div>", unsafe_allow_html=True)
 
-                # Utiliser un bouton Streamlit
-                button_key = f'button_{idx}_{j}_{color}'
-                if cols[j].button(label="", key=button_key, help=color):
-                    st.session_state.selected_colors[cl] = j
-                    new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-                    st.session_state.modified_image = new_img_arr.astype('uint8')
+                    # Utiliser un bouton Streamlit
+                    button_key = f'button_{idx}_{j}_{color}'
+                    if st.button(label="", key=button_key, help=color):
+                        st.session_state.selected_colors[cl] = j
+                        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
+                        st.session_state.modified_image = new_img_arr.astype('uint8')
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {e}")
