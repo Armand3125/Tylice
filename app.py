@@ -64,28 +64,16 @@ def traiter_img(img, Nc, Nd, dim_max):
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
-                
-                # Style du bouton
-                button_style = f"""
-                    background-color: {rgb_str};
-                    width: 40px;
-                    height: 20px;
-                    margin: 2px;
-                    border-radius: 5px;
-                    border: {'3px solid red' if st.session_state.selected_colors[cl] == j else '1px solid black'};
-                """
 
-                # Utiliser un bouton de Streamlit avec un style
+                # Utiliser un bouton Streamlit
                 button_key = f'button_{idx}_{j}_{color}'
                 
-                # Création d'un bouton Streamlit
-                if cols[j].button(label="", key=button_key, help=color, use_container_width=True):
+                # Appliquer le style directement au bouton
+                if cols[j].button(label="", key=button_key, help=color, use_container_width=True,
+                                  style=f"background-color: {rgb_str}; width: 40px; height: 20px; border-radius: 5px; border: {'3px solid red' if st.session_state.selected_colors[cl] == j else '1px solid black'};"):
                     st.session_state.selected_colors[cl] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
-
-                # Afficher le style avec du markdown pour les dimensions
-                cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {e}")
@@ -101,4 +89,4 @@ if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
 
 if 'modified_image' in st.session_state:
-    st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(1.2 * dim_max))
+    st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(1.5 * dim_max))
