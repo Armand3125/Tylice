@@ -71,7 +71,7 @@ def traiter_img(img, Nc, Nd, dim_max):
                     button_style += " border: 1px solid black;"
 
                 # Utiliser une clé unique pour chaque bouton en fonction du cluster et de l'option de couleur
-                button_key = f'button_{cluster_idx}_{j}'
+                button_key = f'button_{cluster_idx}_{j}_{color}'
                 
                 # Vérification et mise à jour de la sélection
                 if cols[j].button(label="", key=button_key, help=color, use_container_width=True):
