@@ -65,7 +65,7 @@ def traiter_img(img, Nc, Nd, dim_max):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
-                # Style du bouton personnalisé
+                # Style du bouton
                 button_style = f"""
                     background-color: {rgb_str};
                     width: 40px;
@@ -73,15 +73,19 @@ def traiter_img(img, Nc, Nd, dim_max):
                     margin: 2px;
                     border-radius: 5px;
                     border: {'3px solid red' if st.session_state.selected_colors[cl] == j else '1px solid black'};
-                    cursor: pointer;
                 """
 
-                # Utiliser markdown pour le style CSS inline et détecter les clics
+                # Utiliser un bouton de Streamlit avec un style
                 button_key = f'button_{idx}_{j}_{color}'
-                if cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True):
+                
+                # Création d'un bouton Streamlit
+                if cols[j].button(label="", key=button_key, help=color, use_container_width=True):
                     st.session_state.selected_colors[cl] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
+
+                # Afficher le style avec du markdown pour les dimensions
+                cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {e}")
