@@ -47,7 +47,6 @@ def traiter_img(img, Nc, Nd, dim_max):
         sorted_cls = sorted(cl_counts.items(), key=lambda x: x[1], reverse=True)
         cl_proches = [proches_lim(kmeans.cluster_centers_[i], pal, Nd) for i in cl_counts.keys()]
 
-        # Ajuster la longueur de selected_colors pour correspondre au nombre de clusters
         if 'selected_colors' not in st.session_state:
             st.session_state.selected_colors = [0] * Nc
         elif len(st.session_state.selected_colors) != Nc:
@@ -66,20 +65,23 @@ def traiter_img(img, Nc, Nd, dim_max):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
                 
-                button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
-                if st.session_state.selected_colors[cl] == j:
-                    button_style += " border: 3px solid red;"
-                else:
-                    button_style += " border: 1px solid black;"
+                # Style du bouton personnalisé
+                button_style = f"""
+                    background-color: {rgb_str};
+                    width: 40px;
+                    height: 20px;
+                    margin: 2px;
+                    border-radius: 5px;
+                    border: {'3px solid red' if st.session_state.selected_colors[cl] == j else '1px solid black'};
+                    cursor: pointer;
+                """
 
+                # Utiliser markdown pour le style CSS inline et détecter les clics
                 button_key = f'button_{idx}_{j}_{color}'
-                
-                if cols[j].button(label="", key=button_key, help=color, use_container_width=True):
+                if cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True):
                     st.session_state.selected_colors[cl] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
-
-                cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {e}")
