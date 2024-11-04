@@ -25,6 +25,7 @@ def proches_lim(c, pal, n):
 
 # Créer une nouvelle image en mappant les clusters aux couleurs de la palette
 def nouvelle_img(img_arr, labels, cl_proches, selected_colors, pal):
+    # Assurer que chaque cluster applique la couleur sélectionnée par l'utilisateur
     color_map = {i: pal[cl_proches[i][selected_colors[i]]] for i in range(len(cl_proches))}
     img_mapped = np.array([color_map[label] for label in labels])
     return img_mapped.reshape(img_arr.shape)
@@ -44,42 +45,48 @@ def traiter_img(img, Nc, Nd, dim_max):
         total_px = pixels.shape[0]
         cl_counts = dict(zip(uniq, counts))
 
+        # Trier les clusters par taille (nombre de pixels)
         sorted_cls = sorted(cl_counts.items(), key=lambda x: x[1], reverse=True)
+
+        # Créer les proximités pour chaque cluster et limiter au nombre de couleurs souhaité
         cl_proches = [proches_lim(kmeans.cluster_centers_[i], pal, Nd) for i in cl_counts.keys()]
 
+        # Initialiser la sélection des couleurs dans la session
         if 'selected_colors' not in st.session_state:
             st.session_state.selected_colors = [0] * Nc
 
+        # Mettre à jour l'image avec les couleurs sélectionnées
         new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
         st.session_state.modified_image = new_img_arr.astype('uint8')
 
-        for cluster_idx, (cl, count) in enumerate(sorted_cls):
+        for idx, (cl, count) in enumerate(sorted_cls):
             percentage = (count / total_px) * 100
-            st.write(f"Cluster {cluster_idx + 1} - {percentage:.2f}%")
+            st.write(f"Cluster {idx + 1} - {percentage:.2f}%")
             col_options = cl_proches[cl]
             cols = st.columns(len(col_options))
 
+            # Affichage des options de couleur pour chaque cluster
             for j, color in enumerate(col_options):
                 rgb = pal[color]
                 rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
-                
-                # Générer un style pour le bouton en fonction de la sélection actuelle
+
+                # Générer le style du bouton avec un contour rouge pour la sélection
                 button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
-                if st.session_state.selected_colors[cluster_idx] == j:
+                if st.session_state.selected_colors[cl] == j:
                     button_style += " border: 3px solid red;"
                 else:
                     button_style += " border: 1px solid black;"
 
-                # Utiliser une clé unique pour chaque bouton en fonction du cluster et de l'option de couleur
-                button_key = f'button_{cluster_idx}_{j}_{color}'
-                
-                # Vérification et mise à jour de la sélection
+                # Clé unique pour chaque bouton de sélection de couleur
+                button_key = f'button_{idx}_{j}_{color}'
+
+                # Gestion de la sélection de couleur
                 if cols[j].button(label="", key=button_key, help=color, use_container_width=True):
-                    st.session_state.selected_colors[cluster_idx] = j
+                    st.session_state.selected_colors[cl] = j
                     new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
                     st.session_state.modified_image = new_img_arr.astype('uint8')
 
-                # Afficher le bouton avec le style HTML
+                # Affichage du bouton de couleur
                 cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
@@ -95,5 +102,6 @@ dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_va
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
 
+# Affichage de l'image modifiée
 if 'modified_image' in st.session_state:
     st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(1.5 * dim_max))
