@@ -79,7 +79,7 @@ def traiter_img(img, Nc, Nd, dim_max):
         st.error(f"Une erreur est survenue : {e}")
 
 # Interface Streamlit
-st.title("Traitement d'Image avec Palette de Couleurs")
+st.title("Tylice")
 uploaded_file = st.file_uploader("Choisissez une image", type=["jpg", "jpeg", "png"])
 Nc = st.slider("Nombre de Clusters", 2, 7, 4)
 Nd = st.slider("Nombre de Couleurs dans la Palette", 2, len(pal), 6)
