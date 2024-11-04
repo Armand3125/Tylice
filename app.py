@@ -96,4 +96,4 @@ if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
 
 if 'modified_image' in st.session_state:
-    st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(0.6 * dim_max))
+    st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(1.5 * dim_max))
