@@ -83,7 +83,9 @@ st.title("Traitement d'Image avec Palette de Couleurs")
 uploaded_file = st.file_uploader("Choisissez une image", type=["jpg", "jpeg", "png"])
 Nc = st.slider("Nombre de Clusters", 2, 7, 4)
 Nd = st.slider("Nombre de Couleurs dans la Palette", 2, len(pal), 6)
-dim_max = st.number_input("Dimension maximale de l'image", min_value=100, max_value=1000, value=400, step=50)
+
+# Fixer la dimension maximale de l'image à 400
+dim_max = 400  
 
 if uploaded_file is not None:
     traiter_img(uploaded_file, Nc, Nd, dim_max)
