@@ -57,30 +57,33 @@ def traiter_img(img, Nc, Nd, dim_max):
             percentage = (count / total_px) * 100
             st.write(f"Cluster {cluster_idx + 1} - {percentage:.2f}%")
             col_options = cl_proches[cl]
-            cols = st.columns(len(col_options))
-
-            for j, color in enumerate(col_options):
-                rgb = pal[color]
-                rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
+            
+            # Créer un conteneur spécifique pour chaque cluster pour éviter le mélange de colonnes
+            with st.container():
+                cols = st.columns(len(col_options))
                 
-                # Générer un style pour le bouton en fonction de la sélection actuelle
-                button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
-                if st.session_state.selected_colors[cluster_idx] == j:
-                    button_style += " border: 3px solid red;"
-                else:
-                    button_style += " border: 1px solid black;"
+                for j, color in enumerate(col_options):
+                    rgb = pal[color]
+                    rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
+                    
+                    # Générer un style pour le bouton en fonction de la sélection actuelle
+                    button_style = f"background-color: {rgb_str}; width: 50px; height: 20px;"
+                    if st.session_state.selected_colors[cluster_idx] == j:
+                        button_style += " border: 3px solid red;"
+                    else:
+                        button_style += " border: 1px solid black;"
 
-                # Utiliser une clé unique pour chaque bouton en fonction du cluster et de l'option de couleur
-                button_key = f'button_{cluster_idx}_{j}'
-                
-                # Vérification et mise à jour de la sélection
-                if cols[j].button(label="", key=button_key, help=color, use_container_width=True):
-                    st.session_state.selected_colors[cluster_idx] = j
-                    new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-                    st.session_state.modified_image = new_img_arr.astype('uint8')
+                    # Utiliser une clé unique pour chaque bouton en fonction du cluster et de l'option de couleur
+                    button_key = f'button_{cluster_idx}_{j}'
+                    
+                    # Vérification et mise à jour de la sélection
+                    if cols[j].button(label="", key=button_key, help=color, use_container_width=True):
+                        st.session_state.selected_colors[cluster_idx] = j
+                        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
+                        st.session_state.modified_image = new_img_arr.astype('uint8')
 
-                # Afficher le bouton avec le style HTML
-                cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
+                    # Afficher le bouton avec le style HTML
+                    cols[j].markdown(f"<div style='{button_style}'></div>", unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"Une erreur est survenue : {e}")
