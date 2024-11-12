@@ -1,94 +1,115 @@
 import streamlit as st
-from sklearn.cluster import KMeans
-from scipy.spatial import distance
 from PIL import Image
 import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.metrics import pairwise_distances_argmin_min
 
-# Palette de couleurs définie
+# Palette de couleurs
 pal = {
-    "Noir_Charbon": (0, 0, 0), "Blanc_Jade": (255, 255, 255),
-    "Jaune_Or": (228, 189, 104), "Bleu_Cyan": (0, 134, 214),
-    "Violet_Lila": (174, 150, 212), "Vert_Gui": (63, 142, 67),
-    "Rouge_Ecarlate": (222, 67, 67), "Bleu_Marine": (0, 120, 191),
-    "Orange_Mandarine": (249, 153, 99), "Vert_Galaxie": (59, 102, 94),
-    "Bleu_Glacier": (163, 216, 225), "Violet_Magenta": (236, 0, 140),
-    "Gris_Argent": (166, 169, 170), "Violet_Basic": (94, 67, 183),
+    "NC": (0, 0, 0), "BJ": (255, 255, 255),
+    "JO": (228, 189, 104), "BC": (0, 134, 214),
+    "VL": (174, 150, 212), "VG": (63, 142, 67),
+    "RE": (222, 67, 67), "BM": (0, 120, 191),
+    "OM": (249, 153, 99), "VGa": (59, 102, 94),
+    "BG": (163, 216, 225), "VM": (236, 0, 140),
+    "GA": (166, 169, 170), "VB": (94, 67, 183),
 }
 
-# Calculer les couleurs les plus proches
-def proches(c, pal):
-    dists = [(n, distance.euclidean(c, col)) for n, col in pal.items()]
-    return sorted(dists, key=lambda x: x[1])
-
-def proches_lim(c, pal, n):
-    return [n for n, _ in proches(c, pal)[:n]]
-
-# Créer une nouvelle image en mappant les clusters aux couleurs de la palette
-def nouvelle_img(img_arr, labels, cl_proches, selected_colors, pal):
-    color_map = {i: pal[cl_proches[i][selected_colors[i]]] for i in range(len(cl_proches))}
-    img_mapped = np.array([color_map[label] for label in labels])
-    return img_mapped.reshape(img_arr.shape)
-
-# Traiter l'image pour clustering et application de la palette
-def traiter_img(img, Nc, Nd, dim_max):
-    try:
-        img = Image.open(img).convert('RGB')
-        img.thumbnail((dim_max, dim_max))
-        img_arr = np.array(img)
-
-        pixels = img_arr.reshape(-1, 3)
-        kmeans = KMeans(n_clusters=Nc, random_state=0).fit(pixels)
-        labels = kmeans.labels_
-
-        uniq, counts = np.unique(labels, return_counts=True)
-        total_px = pixels.shape[0]
-        cl_counts = dict(zip(uniq, counts))
-
-        sorted_cls = sorted(cl_counts.items(), key=lambda x: x[1], reverse=True)
-        cl_proches = [proches_lim(kmeans.cluster_centers_[i], pal, Nd) for i in cl_counts.keys()]
-
-        if 'selected_colors' not in st.session_state:
-            st.session_state.selected_colors = [0] * Nc
-        elif len(st.session_state.selected_colors) != Nc:
-            st.session_state.selected_colors = [0] * Nc
-
-        new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-        st.session_state.modified_image = new_img_arr.astype('uint8')
-
-        for idx, (cl, count) in enumerate(sorted_cls):
-            percentage = (count / total_px) * 100
-            st.write(f"Cluster {idx + 1} - {percentage:.2f}%")
-            col_options = cl_proches[cl]
-            cols = st.columns(len(col_options))
-
-            for j, color in enumerate(col_options):
-                rgb = pal[color]
-                rgb_str = f"rgb({rgb[0]}, {rgb[1]}, {rgb[2]})"
-
-                # Afficher un rectangle coloré comme fond de bouton
-                cols[j].markdown(f"<div style='background-color: {rgb_str}; width: 40px; height: 20px; border-radius: 5px; display: inline-block;'></div>", unsafe_allow_html=True)
-
-                # Utiliser un bouton Streamlit
-                button_key = f'button_{idx}_{j}_{color}'
-                if cols[j].button(label="", key=button_key, help=color):
-                    st.session_state.selected_colors[cl] = j
-                    new_img_arr = nouvelle_img(img_arr, labels, cl_proches, st.session_state.selected_colors, pal)
-                    st.session_state.modified_image = new_img_arr.astype('uint8')
-
-    except Exception as e:
-        st.error(f"Une erreur est survenue : {e}")
-
-# Interface Streamlit
 st.title("Tylice")
-uploaded_file = st.file_uploader("Choisissez une image", type=["jpg", "jpeg", "png"])
-Nc = st.slider("Nombre de Clusters", 2, 7, 4)
-Nd = st.slider("Nombre de Couleurs dans la Palette", 2, len(pal), 6)
 
-# Fixer la dimension maximale de l'image à 400
-dim_max = 400  
+css = """
+    <style>
+        .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
+        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .color-container { display: flex; flex-direction: column; align-items: center; }
+        .color-box { border: 3px solid black; }
+        .stColumn { padding: 0 !important; }
+        .first-box { margin-top: 15px; }
+    </style>
+"""
+st.markdown(css, unsafe_allow_html=True)
 
-if uploaded_file is not None:
-    traiter_img(uploaded_file, Nc, Nd, dim_max)
+uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
-if 'modified_image' in st.session_state:
-    st.image(st.session_state.modified_image, caption="Image Modifiée", width=int(1.5 * dim_max))
+if "num_selections" not in st.session_state:
+    st.session_state.num_selections = 4
+
+col1, col2 = st.columns([1, 5])
+
+with col1:
+    if st.button("4 Couleurs"):
+        st.session_state.num_selections = 4
+
+with col2:
+    if st.button("6 Couleurs"):
+        st.session_state.num_selections = 6
+
+num_selections = st.session_state.num_selections
+rectangle_width = 80 if num_selections == 4 else 50
+rectangle_height = 20
+cols = st.columns(num_selections * 2)
+
+if uploaded_image is not None:
+    # Assure que l'image est en RGB pour éviter les problèmes liés au canal alpha ou au mode niveaux de gris
+    image = Image.open(uploaded_image).convert("RGB")
+    width, height = image.size
+    if width > height:
+        new_width = 400
+        new_height = int((new_width / width) * height)
+    else:
+        new_height = 400
+        new_width = int((new_height / height) * width)
+    
+    resized_image = image.resize((new_width, new_height))
+    img_arr = np.array(resized_image)
+    
+    # Vérifie que l'image est bien en RGB
+    if img_arr.shape[-1] == 3:
+        pixels = img_arr.reshape(-1, 3)
+        
+        # Clustering et sélection de couleurs
+        kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
+        labels = kmeans.labels_
+        centers = kmeans.cluster_centers_
+
+        centers_rgb = np.array(centers, dtype=int)
+        pal_rgb = np.array(list(pal.values()), dtype=int)
+        distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
+
+        ordered_colors_by_cluster = []
+        for i in range(num_selections):
+            closest_colors_idx = distances[i].argsort()
+            ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
+
+        selected_colors = []
+        for i in range(num_selections):
+            with cols[i * 2]:
+                st.markdown("<div class='color-container'>", unsafe_allow_html=True)
+                for j, color_name in enumerate(ordered_colors_by_cluster[i]):
+                    color_rgb = pal[color_name]
+                    margin_class = "first-box" if j == 0 else ""
+                    st.markdown(
+                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        unsafe_allow_html=True
+                    )
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with cols[i * 2 + 1]:
+                selected_color_name = st.radio("", ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+                selected_colors.append(pal[selected_color_name])
+
+        new_img_arr = np.zeros_like(img_arr)
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                lbl = labels[i * img_arr.shape[1] + j]
+                new_img_arr[i, j] = selected_colors[lbl]
+        
+        new_image = Image.fromarray(new_img_arr.astype('uint8'))
+        width, height = new_image.size
+        resized_image = new_image.resize((int(width * 1.1), int(height * 1.1)))
+
+        col1, col2, col3 = st.columns([1, 6, 1])
+        with col2:
+            st.image(resized_image, caption=f"Image avec {num_selections} couleurs", use_column_width=True)
+    else:
+        st.error("L'image doit être en RGB (3 canaux) pour continuer.")
