@@ -40,7 +40,7 @@ if "num_selections" not in st.session_state:
 col1, col2 = st.columns([2, 5])
 
 with col1:
-    if st.button("4 Couleurs : 7.95 €"):
+    if st.button("4 Couleurs : 8.95 €"):
         st.session_state.num_selections = 4
 
 with col2:
