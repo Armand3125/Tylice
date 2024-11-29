@@ -5,6 +5,7 @@ from sklearn.cluster import KMeans
 import io
 from datetime import datetime
 
+
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
