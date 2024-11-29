@@ -21,7 +21,7 @@ st.title("Tylice")
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
-        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
         .color-box { border: 3px solid black; }
         .stColumn { padding: 0 !important; }
@@ -64,6 +64,11 @@ if uploaded_image is not None:
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
+    # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
+    px_per_cm = 25
+    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
         kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
@@ -86,10 +91,6 @@ if uploaded_image is not None:
         sorted_indices = np.argsort(-cluster_percentages)
         sorted_percentages = cluster_percentages[sorted_indices]
         sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
-
-        for i, percentage in enumerate(sorted_percentages):
-            with cols_percentages[i]:
-                st.markdown(f"<div class='percentage-container'><b>{percentage:.2f}%</b></div>", unsafe_allow_html=True)
 
         selected_colors = []
         selected_color_names = []
@@ -131,13 +132,27 @@ if uploaded_image is not None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
-        col1, col2, col3 = st.columns([6, 4, 6])
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
         with col2:
+            # Afficher les dimensions après le bouton de téléchargement
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+        with col3:
             st.download_button(
                 label="Télécharger l'image",
                 data=img_buffer,
                 file_name=file_name,
                 mime="image/png"
             )
+        
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
+
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+""", unsafe_allow_html=True)
