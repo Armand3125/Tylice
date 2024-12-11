@@ -3,3 +3,5 @@ scikit-learn
 scipy
 pillow
 numpy
+flask-cors
+
