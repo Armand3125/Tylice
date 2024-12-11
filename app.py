@@ -6,8 +6,7 @@ import io
 from datetime import datetime
 
 from st_aggrid import AgGrid
-from st_aggrid.shared import st_aggrid
-from flask_cors import CORS
+from flask_cors import CORS  # Assurez-vous que flask-cors est installé
 
 
 pal = {
