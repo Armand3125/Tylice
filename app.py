@@ -5,7 +5,6 @@ from sklearn.cluster import KMeans
 import io
 from datetime import datetime
 
-
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
@@ -124,7 +123,7 @@ if uploaded_image is not None:
 
         col1, col2, col3 = st.columns([1, 6, 1])
         with col2:
-            st.image(resized_image, use_column_width=True)
+            st.image(resized_image, use_container_width=True)
 
         img_buffer = io.BytesIO()
         new_image.save(img_buffer, format="PNG")
@@ -144,7 +143,7 @@ if uploaded_image is not None:
                 file_name=file_name,
                 mime="image/png"
             )
-        
+
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
