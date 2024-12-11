@@ -5,9 +5,6 @@ from sklearn.cluster import KMeans
 import io
 from datetime import datetime
 
-from st_aggrid import AgGrid
-from flask_cors import CORS  # Assurez-vous que flask-cors est installé
-
 
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
