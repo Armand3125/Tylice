@@ -8,19 +8,6 @@ from datetime import datetime
 from st_aggrid import AgGrid
 from flask_cors import CORS  # Assurez-vous que flask-cors est installé
 
-from streamlit.web.server.routes import StaticFileHandler
-
-def modify_cors_headers():
-    def custom_headers(request):
-        origin = request.headers.get("Origin")
-        if origin and "wixsite.com" in origin:  # Vérifiez que la requête vient de Wix
-            request.headers["Access-Control-Allow-Origin"] = origin
-            request.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
-            request.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    StaticFileHandler.set_extra_headers = custom_headers
-
-modify_cors_headers()
-
 
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
