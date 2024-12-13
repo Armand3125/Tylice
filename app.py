@@ -4,8 +4,9 @@ import numpy as np
 from sklearn.cluster import KMeans
 import io
 from datetime import datetime
+import base64
 
-
+# Palette de couleurs
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
@@ -17,8 +18,7 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-st.title("Tylice")
-
+# Configuration du style CSS
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
@@ -33,8 +33,13 @@ css = """
 """
 st.markdown(css, unsafe_allow_html=True)
 
+# Titre de l'application
+st.title("Tylice")
+
+# Chargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
+# Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
@@ -55,6 +60,12 @@ rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
 
+# Fonction pour convertir l'image en Base64
+def encode_image_base64(image):
+    with io.BytesIO() as buffer:
+        image.save(buffer, format="PNG")
+        return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
@@ -65,7 +76,7 @@ if uploaded_image is not None:
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
-    # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
+    # Conversion de pixels à centimètres
     px_per_cm = 25
     new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
     new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
@@ -112,6 +123,7 @@ if uploaded_image is not None:
                 selected_colors.append(pal[selected_color_name])
                 selected_color_names.append(selected_color_name)
 
+        # Recréer l'image avec les nouvelles couleurs
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
@@ -122,32 +134,48 @@ if uploaded_image is not None:
         new_image = Image.fromarray(new_img_arr.astype('uint8'))
         resized_image = new_image
 
+        # Calculer le nom du fichier
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+
         col1, col2, col3 = st.columns([1, 6, 1])
         with col2:
             st.image(resized_image, use_container_width=True)
 
-        img_buffer = io.BytesIO()
-        new_image.save(img_buffer, format="PNG")
-        img_buffer.seek(0)
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+        # Convertir l'image générée en Base64
+        img_base64 = encode_image_base64(new_image)
 
         col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
         with col2:
-            # Afficher les dimensions après le bouton de téléchargement
             st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
         with col3:
             st.download_button(
                 label="Télécharger l'image",
-                data=img_buffer,
+                data=img_base64,
                 file_name=file_name,
                 mime="image/png"
             )
 
+        # Script pour envoyer l'image à Wix via postMessage
+        st.write(
+            f"""
+            <script>
+            const data = {{
+                name: "Image personnalisée",
+                price: 19.99,  // Prix fictif, ajustez selon vos besoins
+                fileData: "{img_base64}",
+                fileName: "{file_name}"
+            }};
+            window.parent.postMessage(data, "https://votre-site-wix.com");  // Remplacez par l'URL de votre site Wix
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
+
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
+# Informations supplémentaires sur l'utilisation
 st.markdown("""
     ### 📝 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
