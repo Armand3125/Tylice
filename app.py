@@ -166,7 +166,7 @@ if uploaded_image is not None:
                 fileData: "{img_base64}",
                 fileName: "{file_name}"
             }};
-            window.parent.postMessage(data, "https://votre-site-wix.com");  // Remplacez par l'URL de votre site Wix
+            window.parent.postMessage(data, "https://www.tylice.com/");  // Remplacez par l'URL de votre site Wix
             </script>
             """,
             unsafe_allow_html=True
