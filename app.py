@@ -29,9 +29,24 @@ css = """
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
+        /* Styles pour mobile */
+        @media (max-width: 768px) {
+            .stButton>button {
+                width: 100%;
+            }
+            .stDownloadButton {
+                width: 100%;
+            }
+        }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
+# Ajout d'une balise meta pour gérer l'affichage responsive dans une iframe
+from streamlit.components.v1 import html
+html("""
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+""", height=0)
 
 # Titre de l'application
 st.title("Tylice")
@@ -166,7 +181,7 @@ if uploaded_image is not None:
                 fileData: "{img_base64}",
                 fileName: "{file_name}"
             }};
-            window.parent.postMessage(data, "https://www.tylice.com/");  // Remplacez par l'URL de votre site Wix
+            window.parent.postMessage(data, "*");
             </script>
             """,
             unsafe_allow_html=True
