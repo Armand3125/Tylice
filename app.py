@@ -21,31 +21,52 @@ pal = {
 # Configuration du style CSS
 css = """
     <style>
-        .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
-        .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
-        .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
-        .color-box { border: 3px solid black; }
-        .stColumn { padding: 0 !important; }
-        .first-box { margin-top: 15px; }
-        .percentage-container { margin-bottom: 0; }
-        .button-container { margin-bottom: 20px; }
-        /* Styles pour mobile */
+        /* Gestion des colonnes pour éviter le basculement vertical */
+        [class^="stColumn"] {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        /* Fix pour éviter le basculement des colonnes dans les iframes */
+        .stHorizontal {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        /* Forcer les colonnes à garder leur largeur minimale */
+        [data-testid="stVerticalBlock"] > div {
+            min-width: 48%;
+        }
+        /* Boutons et conteneurs pour mobile */
         @media (max-width: 768px) {
-            .stButton>button {
+            .stButton>button, .stDownloadButton>button {
                 width: 100%;
             }
-            .stDownloadButton {
-                width: 100%;
+            [data-testid="stVerticalBlock"] > div {
+                min-width: 100%;
             }
         }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
 
-# Ajout d'une balise meta pour gérer l'affichage responsive dans une iframe
+# Script pour redimensionner dynamiquement l'iframe
 from streamlit.components.v1 import html
 html("""
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+    // Fonction pour ajuster dynamiquement la hauteur de l'iframe
+    function resizeIframe() {
+        const frameHeight = document.body.scrollHeight;
+        window.parent.postMessage({frameHeight: frameHeight}, "*");
+    }
+    // Écoute les changements dans le DOM pour redimensionner
+    new ResizeObserver(resizeIframe).observe(document.body);
+    resizeIframe();
+</script>
 """, height=0)
 
 # Titre de l'application
