@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import io
 from datetime import datetime
+import requests
 
 # Palette de couleurs
 pal = {
@@ -65,6 +66,18 @@ def get_image_bytes(image):
     image.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer.getvalue()
+
+# Fonction pour ajouter un article au panier Wix
+def add_to_wix_cart(product_id):
+    try:
+        wix_cart_api_url = "https://www.votre-site-wix.com/_functions/cart/add"  # Remplacez par l'URL de l'API Wix
+        payload = {"productId": product_id, "quantity": 1}
+        response = requests.post(wix_cart_api_url, json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        st.error(f"Erreur lors de l'ajout au panier Wix : {e}")
+        return None
 
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
@@ -146,22 +159,25 @@ if uploaded_image is not None:
         with col2:
             st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
         with col3:
-            st.download_button(
+            if st.download_button(
                 label="Télécharger l'image",
                 data=get_image_bytes(new_image),
                 file_name=file_name,
                 mime="image/png"
-            )
+            ):
+                # Ajouter un article au panier Wix
+                product_id = "votre-product-id"  # Remplacez par l'ID réel du produit dans Wix
+                add_to_wix_cart(product_id)
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
 # Informations supplémentaires sur l'utilisation
 st.markdown("""
-    ### 📝 Conseils d'utilisation :
+    ### 🗒 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
     - Préférez des images avec un bon contraste et des éléments bien définis.
     - Une **image carrée** donnera un meilleur résultat.
     - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
     - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
     - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True) 
+""", unsafe_allow_html=True)
