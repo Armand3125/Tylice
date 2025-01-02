@@ -70,7 +70,7 @@ def get_image_bytes(image):
 # Fonction pour ajouter un article au panier Wix
 def add_to_wix_cart(product_id):
     try:
-        wix_cart_api_url = "https://www.votre-site-wix.com/_functions/cart/add"  # Remplacez par l'URL de l'API Wix
+        wix_cart_api_url = "https://www.tylice.com/_functions/cart/add"  # Remplacez par l'URL de l'API Wix
         payload = {"productId": product_id, "quantity": 1}
         response = requests.post(wix_cart_api_url, json=payload)
         response.raise_for_status()
@@ -166,8 +166,9 @@ if uploaded_image is not None:
                 mime="image/png"
             ):
                 # Ajouter un article au panier Wix
-                product_id = "votre-product-id"  # Remplacez par l'ID réel du produit dans Wix
+                product_id = "df19c1f7-07d8-a265-42f8-e8dfa824cc6e"  # Remplacez par l'ID réel du produit dans Wix
                 add_to_wix_cart(product_id)
+
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
