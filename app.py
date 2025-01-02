@@ -164,4 +164,4 @@ st.markdown("""
     - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
     - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
     - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True) ju'itilse ce code hebrger sur heroku pour l'inclure dans une fenetre html de mon site wix. j'iamerais que lorsque l'utilisatuer appui sur telecharger l'image, soit egalement ajouté au panier un article du prix de 4 ou 6 couleurs
+""", unsafe_allow_html=True) 
