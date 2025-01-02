@@ -70,25 +70,22 @@ def get_image_bytes(image):
 # Fonction pour ajouter un article au panier Wix
 def add_to_wix_cart(product_id):
     try:
-        # Utilisez l'URL correcte pour appeler votre API Wix
-        wix_cart_api_url = "https://www.tylice.com/_functions/cart_add"
-        
-        # Payload à envoyer à l'API
+        wix_cart_api_url = "https://www.tylice.com/_functions/cart_add"  # Vérifiez l'URL de votre fonction Wix
+
         payload = {"productId": product_id, "quantity": 1}
-        
-        # Envoyer la requête POST
-        response = requests.post(
-            wix_cart_api_url,
-            json=payload,
-            headers={"Content-Type": "application/json"}
-        )
-        
-        # Vérifiez la réponse
+        headers = {"Content-Type": "application/json"}  # Ajouter les en-têtes nécessaires si requis
+
+        # Ajouter un log pour vérifier la requête envoyée
+        st.write("Envoi de la requête POST vers Wix avec payload:", payload)
+
+        response = requests.post(wix_cart_api_url, json=payload, headers=headers)
+
+        # Vérification de la réponse
         if response.status_code == 200:
             st.success("Produit ajouté au panier avec succès !")
             return response.json()
         else:
-            st.error(f"Erreur lors de l'ajout au panier : {response.text}")
+            st.error(f"Erreur lors de l'ajout au panier: {response.status_code} - {response.text}")
             return None
     except requests.RequestException as e:
         st.error(f"Erreur lors de l'ajout au panier Wix : {e}")
