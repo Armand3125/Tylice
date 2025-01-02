@@ -35,6 +35,15 @@ st.markdown(css, unsafe_allow_html=True)
 # Titre de l'application
 st.title("Tylice")
 
+# Ajouter un script JavaScript pour la communication avec Wix
+st.markdown("""
+    <script>
+        function ajouterAuPanier(article) {
+            window.parent.postMessage({ action: 'ajouter_au_panier', article: article }, '*');
+        }
+    </script>
+""", unsafe_allow_html=True)
+
 # Chargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
@@ -53,10 +62,6 @@ with col2:
         st.session_state.num_selections = 6
 
 num_selections = st.session_state.num_selections
-cols_percentages = st.columns(num_selections)
-
-rectangle_width = 80 if num_selections == 4 else 50
-rectangle_height = 20
 cols = st.columns(num_selections * 2)
 
 # Fonction pour convertir l'image en bytes
@@ -75,11 +80,6 @@ if uploaded_image is not None:
 
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
-
-    # Conversion de pixels à centimètres
-    px_per_cm = 25
-    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
-    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
@@ -101,7 +101,6 @@ if uploaded_image is not None:
         cluster_percentages = (cluster_counts / total_pixels) * 100
 
         sorted_indices = np.argsort(-cluster_percentages)
-        sorted_percentages = cluster_percentages[sorted_indices]
         sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
 
         selected_colors = []
@@ -113,7 +112,7 @@ if uploaded_image is not None:
                     color_rgb = pal[color_name]
                     margin_class = "first-box" if j == 0 else ""
                     st.markdown(
-                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: 50px; height: 20px; border-radius: 5px; margin-bottom: 4px;'></div>",
                         unsafe_allow_html=True
                     )
                 st.markdown("</div>", unsafe_allow_html=True)
@@ -132,7 +131,6 @@ if uploaded_image is not None:
                 new_img_arr[i, j] = selected_colors[new_color_index]
 
         new_image = Image.fromarray(new_img_arr.astype('uint8'))
-        resized_image = new_image
 
         # Calculer le nom du fichier
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -140,28 +138,17 @@ if uploaded_image is not None:
 
         col1, col2, col3 = st.columns([1, 6, 1])
         with col2:
-            st.image(resized_image, use_container_width=True)
+            st.image(new_image, use_container_width=True)
 
         col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
         with col3:
             st.download_button(
                 label="Télécharger l'image",
                 data=get_image_bytes(new_image),
                 file_name=file_name,
-                mime="image/png"
+                mime="image/png",
+                on_click="ajouterAuPanier",
+                args=("4 couleurs" if num_selections == 4 else "6 couleurs")
             )
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
-
-# Informations supplémentaires sur l'utilisation
-st.markdown("""
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True)
