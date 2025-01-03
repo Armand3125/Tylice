@@ -67,23 +67,6 @@ def get_image_base64(image):
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
     return img_str
 
-# Fonction pour ajouter un article au panier Wix
-def add_to_wix_cart(image_base64):
-    try:
-        # Remplacez l'URL avec celle de votre propre API Wix
-        wix_cart_api_url = "https://www.tylice.com/_functions/cart_add"
-        payload = {"image": image_base64, "quantity": 1}
-        headers = {"Content-Type": "application/json"}
-
-        response = requests.post(wix_cart_api_url, json=payload, headers=headers)
-
-        if response.status_code == 200:
-            st.success("Produit ajouté au panier avec succès !")
-        else:
-            st.error(f"Erreur lors de l'ajout au panier: {response.status_code} - {response.text}")
-    except requests.RequestException as e:
-        st.error(f"Erreur lors de l'ajout au panier Wix : {e}")
-
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
@@ -152,22 +135,18 @@ if uploaded_image is not None:
         with col2:
             st.image(resized_image, use_container_width=True)
 
-        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            st.markdown(f"**{new_width} cm x {new_height} cm**")
-        with col3:
-            base64_img = get_image_base64(new_image)
-            download_link = f'<a href="data:image/png;base64,{base64_img}" download="palette.png"><button style="background-color:#4CAF50; color:white; padding: 10px 20px; font-size:16px; border-radius:5px;">Télécharger l\'image</button></a>'
-            st.markdown(download_link, unsafe_allow_html=True)
+        # Convertir l'image en base64
+        base64_img = get_image_base64(new_image)
 
-    else:
-        st.error("L'image doit être en RGB (3 canaux) pour continuer.")
+        # Ajouter un bouton pour envoyer l'image à l'iframe
+        if st.button("Ajouter au panier"):
+            st.markdown(
+                f'<script>parent.postMessage({{"image": "{base64_img}"}}, "*");</script>',
+                unsafe_allow_html=True
+            )
 
-# Bouton pour ajouter au panier
-if st.button("Ajouter au panier"):
-    # Convertir l'image modifiée en base64
-    base64_img = get_image_base64(resized_image)
-    add_to_wix_cart(base64_img)
+        st.markdown(f"**Dimensions de l'image : {new_width} cm x {new_height} cm**")
+
 
 # Conseils d'utilisation
 st.markdown("""
