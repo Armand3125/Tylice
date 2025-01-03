@@ -2,8 +2,6 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
-import io
-from datetime import datetime
 import base64
 from io import BytesIO
 import requests
@@ -70,23 +68,21 @@ def get_image_base64(image):
     return img_str
 
 # Fonction pour ajouter un article au panier Wix
-def add_to_wix_cart(product_id):
+def add_to_wix_cart(image_base64):
     try:
-        wix_cart_api_url = "https://www.tylice.com/_functions/cart_add"  # Vérifiez l'URL de votre fonction Wix
-        payload = {"productId": product_id, "quantity": 1}
+        # Remplacez l'URL avec celle de votre propre API Wix
+        wix_cart_api_url = "https://www.tylice.com/_functions/cart_add"
+        payload = {"image": image_base64, "quantity": 1}
         headers = {"Content-Type": "application/json"}
 
         response = requests.post(wix_cart_api_url, json=payload, headers=headers)
 
         if response.status_code == 200:
             st.success("Produit ajouté au panier avec succès !")
-            return response.json()
         else:
             st.error(f"Erreur lors de l'ajout au panier: {response.status_code} - {response.text}")
-            return None
     except requests.RequestException as e:
         st.error(f"Erreur lors de l'ajout au panier Wix : {e}")
-        return None
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
@@ -169,8 +165,9 @@ if uploaded_image is not None:
 
 # Bouton pour ajouter au panier
 if st.button("Ajouter au panier"):
-    product_id = "df19c1f7-07d8-a265-42f8-e8dfa824cc6e"
-    add_to_wix_cart(product_id)
+    # Convertir l'image modifiée en base64
+    base64_img = get_image_base64(resized_image)
+    add_to_wix_cart(base64_img)
 
 # Conseils d'utilisation
 st.markdown("""
