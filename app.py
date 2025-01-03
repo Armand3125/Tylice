@@ -62,13 +62,6 @@ rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
 
-# Fonction pour convertir l'image en bytes
-def get_image_bytes(image):
-    buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
-    buffer.seek(0)
-    return buffer.getvalue()
-
 # Fonction pour convertir une image en base64
 def get_image_base64(image):
     buffered = BytesIO()
@@ -80,16 +73,11 @@ def get_image_base64(image):
 def add_to_wix_cart(product_id):
     try:
         wix_cart_api_url = "https://www.tylice.com/_functions/cart_add"  # Vérifiez l'URL de votre fonction Wix
-
         payload = {"productId": product_id, "quantity": 1}
-        headers = {"Content-Type": "application/json"}  # Ajouter les en-têtes nécessaires si requis
-
-        # Ajouter un log pour vérifier la requête envoyée
-        st.write("Envoi de la requête POST vers Wix avec payload:", payload)
+        headers = {"Content-Type": "application/json"}
 
         response = requests.post(wix_cart_api_url, json=payload, headers=headers)
 
-        # Vérification de la réponse
         if response.status_code == 200:
             st.success("Produit ajouté au panier avec succès !")
             return response.json()
@@ -110,11 +98,6 @@ if uploaded_image is not None:
 
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
-
-    # Conversion de pixels à centimètres
-    px_per_cm = 25
-    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
-    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
@@ -169,37 +152,32 @@ if uploaded_image is not None:
         new_image = Image.fromarray(new_img_arr.astype('uint8'))
         resized_image = new_image
 
-        # Calculer le nom du fichier
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
-
         col1, col2, col3 = st.columns([1, 6, 1])
         with col2:
             st.image(resized_image, use_container_width=True)
 
         col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
         with col2:
-            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+            st.markdown(f"**{new_width} cm x {new_height} cm**")
         with col3:
-            # Générer un lien de téléchargement avec le fichier en base64
             base64_img = get_image_base64(new_image)
-            download_link = f'<a href="data:image/png;base64,{base64_img}" download="{file_name}"><button style="background-color:#4CAF50; color:white; padding: 10px 20px; font-size:16px; border-radius:5px;">Télécharger l\'image</button></a>'
+            download_link = f'<a href="data:image/png;base64,{base64_img}" download="palette.png"><button style="background-color:#4CAF50; color:white; padding: 10px 20px; font-size:16px; border-radius:5px;">Télécharger l\'image</button></a>'
             st.markdown(download_link, unsafe_allow_html=True)
 
-        # Ajouter le produit au panier Wix (conditionné par un bouton)
-        with col4:
-            if st.button("Ajouter au panier"):
-                add_to_wix_cart("df19c1f7-07d8-a265-42f8-e8dfa824cc6e")
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
-# Informations supplémentaires sur l'utilisation
+# Bouton pour ajouter au panier
+if st.button("Ajouter au panier"):
+    product_id = "df19c1f7-07d8-a265-42f8-e8dfa824cc6e"
+    add_to_wix_cart(product_id)
+
+# Conseils d'utilisation
 st.markdown("""
     ### 🗒 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
     - Préférez des images avec un bon contraste et des éléments bien définis.
     - Une **image carrée** donnera un meilleur résultat.
     - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
     - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
 """, unsafe_allow_html=True)
