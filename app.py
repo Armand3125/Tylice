@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import io
 from datetime import datetime
-import requests
+import base64
 
 # Palette de couleurs
 pal = {
@@ -60,36 +60,11 @@ rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
 
-# Fonction pour convertir l'image en bytes
-def get_image_bytes(image):
-    buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
-    buffer.seek(0)
-    return buffer.getvalue()
-
-# Fonction pour ajouter un article au panier Wix
-def add_to_wix_cart(product_id):
-    try:
-        wix_cart_api_url = "https://www.tylice.com/_functions/cart_add"  # Vérifiez l'URL de votre fonction Wix
-
-        payload = {"productId": product_id, "quantity": 1}
-        headers = {"Content-Type": "application/json"}  # Ajouter les en-têtes nécessaires si requis
-
-        # Ajouter un log pour vérifier la requête envoyée
-        st.write("Envoi de la requête POST vers Wix avec payload:", payload)
-
-        response = requests.post(wix_cart_api_url, json=payload, headers=headers)
-
-        # Vérification de la réponse
-        if response.status_code == 200:
-            st.success("Produit ajouté au panier avec succès !")
-            return response.json()
-        else:
-            st.error(f"Erreur lors de l'ajout au panier: {response.status_code} - {response.text}")
-            return None
-    except requests.RequestException as e:
-        st.error(f"Erreur lors de l'ajout au panier Wix : {e}")
-        return None
+# Fonction pour convertir l'image en base64
+def get_image_base64(image):
+    buffered = io.BytesIO()
+    image.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode()
 
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
@@ -168,18 +143,14 @@ if uploaded_image is not None:
             st.image(resized_image, use_container_width=True)
 
         col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
         with col3:
-            if st.download_button(
-                label="Télécharger l'image",
-                data=get_image_bytes(new_image),
-                file_name=file_name,
-                mime="image/png"
-            ):
-                # Ajouter un article au panier Wix
-                product_id = "df19c1f7-07d8-a265-42f8-e8dfa824cc6e"  # Remplacez par l'ID réel du produit dans Wix
-                add_to_wix_cart(product_id)
+            # Affichage du bouton de téléchargement avec le lien base64
+            download_button_html = f"""
+                <a href="data:image/png;base64,{get_image_base64(new_image)}" download="{file_name}">
+                    <button style="background-color:#4CAF50; color:white; padding: 10px 20px; font-size:16px; border-radius:5px;">Télécharger l'image</button>
+                </a>
+            """
+            st.markdown(download_button_html, unsafe_allow_html=True)
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
