@@ -186,9 +186,10 @@ if uploaded_image is not None:
             download_link = f'<a href="data:image/png;base64,{base64_img}" download="{file_name}"><button style="background-color:#4CAF50; color:white; padding: 10px 20px; font-size:16px; border-radius:5px;">Télécharger l\'image</button></a>'
             st.markdown(download_link, unsafe_allow_html=True)
 
-        # Ajouter le produit au panier Wix
-        add_to_wix_cart("df19c1f7-07d8-a265-42f8-e8dfa824cc6e")
-
+        # Ajouter le produit au panier Wix (conditionné par un bouton)
+        with col4:
+            if st.button("Ajouter au panier"):
+                add_to_wix_cart("df19c1f7-07d8-a265-42f8-e8dfa824cc6e")
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
