@@ -140,8 +140,9 @@ if uploaded_image is not None:
 
         # Ajouter un bouton pour envoyer l'image à l'iframe
         if st.button("Ajouter au panier"):
+            base64_img_with_prefix = f"data:image/png;base64,{base64_img}"  # Préfixe nécessaire pour le format base64
             st.markdown(
-                f'<script>parent.postMessage({{"image": "{base64_img}"}}, "*");</script>',
+                f'<script>parent.postMessage({{"image": "{base64_img_with_prefix}"}}, "*");</script>',
                 unsafe_allow_html=True
             )
 
