@@ -74,11 +74,7 @@ if uploaded_image is not None:
     new_width = dim if width > height else int((dim / height) * width)
     new_height = dim if height >= width else int((dim / width) * height)
 
-    # Appliquer le calcul des dimensions
-    new_width = (new_width / 350) * 14
-    new_height = (new_height / 350) * 14
-
-    resized_image = image.resize((int(new_width), int(new_height)))
+    resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
     if img_arr.shape[-1] == 3:
@@ -152,16 +148,16 @@ if uploaded_image is not None:
                 )
 
         with col2:
-            if st.button("Télécharger l'image"):
-                # Créer un lien de téléchargement
-                st.download_button(
-                    label="Télécharger l'image",
-                    data=base64.b64decode(base64_img),
-                    file_name="image_modifiee.png",
-                    mime="image/png"
-                )
+            # Le bouton de téléchargement d'image corrigé (sans duplication)
+            st.download_button(
+                label="Télécharger l'image",
+                data=base64.b64decode(base64_img),
+                file_name="image_modifiee.png",
+                mime="image/png"
+            )
 
-        st.markdown(f"**Dimensions de l'image : {int(new_width)} cm x {int(new_height)} cm**")
+        # Affichage des dimensions de l'image
+        st.markdown(f"**Dimensions de l'image : {new_width:.2f} px x {new_height:.2f} px**")
 
 
 # Conseils d'utilisation
