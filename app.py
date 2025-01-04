@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import io
 from datetime import datetime
-
+import requests
 
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
@@ -54,6 +54,46 @@ cols_percentages = st.columns(num_selections)
 rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
+
+# Fonction pour ajouter au panier Wix
+def add_to_wix_cart(image_url, product_name, price):
+    wix_cart_url = "https://www.wixapis.com/stores/cart/add"
+    
+    # Remplacez ceci par votre clé d'API Wix et autres informations nécessaires
+    headers = {
+        'Authorization': 'Bearer YOUR_WIX_API_KEY',
+        'Content-Type': 'application/json'
+    }
+
+    # Corps de la requête, vous devrez peut-être adapter cette partie en fonction de la structure de l'API Wix
+    data = {
+        "items": [
+            {
+                "productId": "PRODUCT_ID_FROM_WIX",  # Remplacer par l'ID de votre produit Wix
+                "quantity": 1,
+                "customFields": [
+                    {
+                        "name": "Image URL",
+                        "value": image_url
+                    },
+                    {
+                        "name": "Product Name",
+                        "value": product_name
+                    }
+                ],
+                "price": price
+            }
+        ]
+    }
+
+    # Effectuer la requête POST pour ajouter l'élément au panier
+    response = requests.post(wix_cart_url, headers=headers, json=data)
+
+    # Vérification de la réponse
+    if response.status_code == 200:
+        st.success("Produit ajouté au panier avec succès!")
+    else:
+        st.error(f"Erreur lors de l'ajout au panier: {response.text}")
 
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
@@ -144,6 +184,14 @@ if uploaded_image is not None:
                 file_name=file_name,
                 mime="image/png"
             )
+        
+        # Ajout d'un bouton pour ajouter au panier Wix
+        with col3:
+            if st.button("Ajouter au panier"):
+                image_url = img_buffer.getvalue()  # URL ou données binaires de l'image
+                product_name = f"Image : {''.join(selected_color_names)}"
+                price = 7.95 if num_selections == 4 else 11.95
+                add_to_wix_cart(image_url, product_name, price)
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
