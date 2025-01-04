@@ -74,7 +74,11 @@ if uploaded_image is not None:
     new_width = dim if width > height else int((dim / height) * width)
     new_height = dim if height >= width else int((dim / width) * height)
 
-    resized_image = image.resize((new_width, new_height))
+    # Appliquer le calcul des dimensions
+    new_width = (new_width / 350) * 14
+    new_height = (new_height / 350) * 14
+
+    resized_image = image.resize((int(new_width), int(new_height)))
     img_arr = np.array(resized_image)
 
     if img_arr.shape[-1] == 3:
@@ -138,18 +142,30 @@ if uploaded_image is not None:
         base64_img = get_image_base64(new_image)
 
         # Ajouter un bouton pour envoyer l'image à l'iframe
-        if st.button("Ajouter au panier"):
-            base64_img_with_prefix = f"data:image/png;base64,{base64_img}"  # Préfixe nécessaire pour le format base64
-            st.markdown(
-                f'<script>console.log("Message envoyé avec l\'image"); parent.postMessage({{"image": "{base64_img_with_prefix}"}}, "*");</script>',
-                unsafe_allow_html=True
-            )
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("Ajouter au panier"):
+                base64_img_with_prefix = f"data:image/png;base64,{base64_img}"  # Préfixe nécessaire pour le format base64
+                st.markdown(
+                    f'<script>parent.postMessage({{"image": "{base64_img_with_prefix}"}}, "*");</script>',
+                    unsafe_allow_html=True
+                )
 
-        st.markdown(f"**Dimensions de l'image : {new_width} cm x {new_height} cm**")
+        with col2:
+            if st.button("Télécharger l'image"):
+                # Créer un lien de téléchargement
+                st.download_button(
+                    label="Télécharger l'image",
+                    data=base64.b64decode(base64_img),
+                    file_name="image_modifiee.png",
+                    mime="image/png"
+                )
+
+        st.markdown(f"**Dimensions de l'image : {int(new_width)} cm x {int(new_height)} cm**")
 
 
 # Conseils d'utilisation
-st.markdown(""" 
+st.markdown("""
     ### 🗒 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
     - Préférez des images avec un bon contraste et des éléments bien définis.
