@@ -4,8 +4,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 import io
 from datetime import datetime
-import requests
 
+# Palette de couleurs
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
@@ -19,6 +19,7 @@ pal = {
 
 st.title("Tylice")
 
+# CSS pour l'affichage
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
@@ -54,6 +55,11 @@ cols_percentages = st.columns(num_selections)
 rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
+
+# Fonction pour créer le lien d'ajout au panier Wix
+def generate_wix_url(image_url, product_name, price):
+    wix_url = f"https://www.votre-site-wix.com/checkout?image_url={image_url}&product_name={product_name}&price={price}"
+    return wix_url
 
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
@@ -145,21 +151,18 @@ if uploaded_image is not None:
                 mime="image/png"
             )
         
-        # Mise à jour du bouton pour ajouter au panier
-        with col3:
-            st.markdown("""
-                <p style="text-align: center;">Téléchargez l'image et ajoutez-la manuellement à votre panier Wix avec son prix et sa description.</p>
-            """, unsafe_allow_html=True)
-            st.markdown(
-                f"<p style='font-weight: bold; text-align: center;'>Prix : {7.95 if num_selections == 4 else 11.95} €</p>",
-                unsafe_allow_html=True
-            )
+        # Générer l'URL d'ajout au panier Wix
+        wix_url = generate_wix_url(img_buffer.getvalue(), ''.join(selected_color_names), 7.95 if num_selections == 4 else 11.95)
 
+        # Afficher le bouton "Ajouter au panier"
+        with col3:
+            st.markdown(f"[Ajouter au panier Wix]({wix_url})")
+        
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
 st.markdown(""" 
-    ### 📝 Conseils d'utilisation :
+    ### 📝 Conseils d'utilisation : 
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
     - Préférez des images avec un bon contraste et des éléments bien définis.
     - Une **image carrée** donnera un meilleur résultat.
