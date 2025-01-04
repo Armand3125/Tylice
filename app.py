@@ -58,7 +58,7 @@ cols = st.columns(num_selections * 2)
 
 # Fonction pour créer le lien d'ajout au panier Wix
 def generate_wix_url(image_url, product_name, price):
-    wix_url = f"https://www.tylice.com/checkout?image_url={image_url}&product_name={product_name}&price={price}"
+    wix_url = f"https://www.tylice.com/panier?image_url={image_url}&product_name={product_name}&price={price}"
     return wix_url
 
 if uploaded_image is not None:
