@@ -167,7 +167,7 @@ if uploaded_image is not None:
             "price": 7.95 if num_selections == 4 else 11.95
         }
 
-        url = f"https://www.votre-site-wix.com/panier?image_url={url_params['image_url']}&product_name={url_params['product_name']}&price={url_params['price']}"
+        url = f"https://www.tylice.com/panier?image_url={url_params['image_url']}&product_name={url_params['product_name']}&price={url_params['price']}"
         with col4:
             st.markdown(f"**Lien vers le panier Wix :** [Cliquez ici pour ajouter au panier](<{url}>)")
 
