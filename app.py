@@ -141,7 +141,7 @@ if uploaded_image is not None:
         if st.button("Ajouter au panier"):
             base64_img_with_prefix = f"data:image/png;base64,{base64_img}"  # Préfixe nécessaire pour le format base64
             st.markdown(
-                f'<script>parent.postMessage({{"image": "{base64_img_with_prefix}"}}, "*");</script>',
+                f'<script>console.log("Message envoyé avec l\'image"); parent.postMessage({{"image": "{base64_img_with_prefix}"}}, "*");</script>',
                 unsafe_allow_html=True
             )
 
@@ -149,7 +149,7 @@ if uploaded_image is not None:
 
 
 # Conseils d'utilisation
-st.markdown("""
+st.markdown(""" 
     ### 🗒 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
     - Préférez des images avec un bon contraste et des éléments bien définis.
