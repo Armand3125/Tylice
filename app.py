@@ -4,7 +4,6 @@ import numpy as np
 from sklearn.cluster import KMeans
 import base64
 from io import BytesIO
-import requests
 
 # Palette de couleurs
 pal = {
