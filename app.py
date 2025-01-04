@@ -3,10 +3,9 @@ from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 import io
-import base64
 from datetime import datetime
 
-# Palette de couleurs définie
+
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
@@ -18,10 +17,8 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-# Titre de l'application Streamlit
 st.title("Tylice")
 
-# CSS personnalisé pour l'affichage
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
@@ -36,14 +33,11 @@ css = """
 """
 st.markdown(css, unsafe_allow_html=True)
 
-# Upload d'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
-# Définir le nombre de sélections par défaut
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
-# Colonnes pour choisir les couleurs
 col1, col2 = st.columns([2, 5])
 
 with col1:
@@ -61,14 +55,6 @@ rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
 
-# Fonction pour encoder l'image en base64
-def encode_image_to_base64(image):
-    buffered = io.BytesIO()
-    image.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    return img_str
-
-# Si une image est téléchargée
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
@@ -81,8 +67,8 @@ if uploaded_image is not None:
 
     # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
     px_per_cm = 25
-    new_width_cm = round(new_width / px_per_cm, 1)
-    new_height_cm = round(new_height / px_per_cm, 1)
+    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
@@ -126,7 +112,6 @@ if uploaded_image is not None:
                 selected_colors.append(pal[selected_color_name])
                 selected_color_names.append(selected_color_name)
 
-        # Créer une nouvelle image avec les couleurs sélectionnées
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
@@ -137,39 +122,36 @@ if uploaded_image is not None:
         new_image = Image.fromarray(new_img_arr.astype('uint8'))
         resized_image = new_image
 
-        # Affichage de l'image générée
         col1, col2, col3 = st.columns([1, 6, 1])
         with col2:
             st.image(resized_image, use_container_width=True)
 
-        # Encoder l'image en base64
-        encoded_image = encode_image_to_base64(new_image)
+        img_buffer = io.BytesIO()
+        new_image.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
         col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
         with col2:
-            # Afficher les dimensions de l'image
+            # Afficher les dimensions après le bouton de téléchargement
             st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
         with col3:
             st.download_button(
                 label="Télécharger l'image",
-                data=io.BytesIO(new_image.tobytes()),
+                data=img_buffer,
                 file_name=file_name,
                 mime="image/png"
             )
 
-        # Créer l'URL avec l'image encodée en base64
-        url_params = {
-            "image_url": encoded_image,
-            "product_name": "".join(selected_color_names),
-            "price": 7.95 if num_selections == 4 else 11.95
-        }
+        # Ajouter au panier
+        product_price = 7.95 if num_selections == 4 else 11.95
+        product_name = f"Image personnalisée ({num_selections} couleurs)"
+        wix_cart_url = f"https://votre-site-wix.com/cart?add_item=true&name={product_name}&price={product_price}&quantity=1"
 
-        url = f"https://www.tylice.com/panier?image_url={url_params['image_url']}&product_name={url_params['product_name']}&price={url_params['price']}"
-        with col4:
-            st.markdown(f"**Lien vers le panier Wix :** [Cliquez ici pour ajouter au panier](<{url}>)")
+        if st.button("Ajouter au panier"):
+            st.markdown(f"[Cliquez ici pour ajouter au panier]({wix_cart_url})", unsafe_allow_html=True)
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
