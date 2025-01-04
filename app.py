@@ -148,7 +148,7 @@ if uploaded_image is not None:
         # Ajouter au panier
         product_price = 7.95 if num_selections == 4 else 11.95
         product_name = f"Image personnalisée ({num_selections} couleurs)"
-        wix_cart_url = f"https://votre-site-wix.com/cart?add_item=true&name={product_name}&price={product_price}&quantity=1"
+        wix_cart_url = f"https:/tylice.com/cart-page?add_item=true&name={product_name}&price={product_price}&quantity=1"
 
         if st.button("Ajouter au panier"):
             st.markdown(f"[Cliquez ici pour ajouter au panier]({wix_cart_url})", unsafe_allow_html=True)
