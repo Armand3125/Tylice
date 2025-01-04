@@ -2,10 +2,10 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
-import base64
-from io import BytesIO
+import io
+from datetime import datetime
 
-# Palette de couleurs
+
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
@@ -17,7 +17,8 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-# Configuration du style CSS
+st.title("Tylice")
+
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
@@ -32,13 +33,8 @@ css = """
 """
 st.markdown(css, unsafe_allow_html=True)
 
-# Titre de l'application
-st.title("Tylice")
-
-# Chargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
-# Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
@@ -59,14 +55,6 @@ rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
 
-# Fonction pour convertir une image en base64
-def get_image_base64(image):
-    buffered = BytesIO()
-    image.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    return img_str
-
-# Traitement de l'image téléchargée
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
@@ -76,6 +64,11 @@ if uploaded_image is not None:
 
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
+
+    # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
+    px_per_cm = 25
+    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
@@ -119,7 +112,6 @@ if uploaded_image is not None:
                 selected_colors.append(pal[selected_color_name])
                 selected_color_names.append(selected_color_name)
 
-        # Recréer l'image avec les nouvelles couleurs
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
@@ -134,38 +126,34 @@ if uploaded_image is not None:
         with col2:
             st.image(resized_image, use_container_width=True)
 
-        # Convertir l'image en base64
-        base64_img = get_image_base64(new_image)
+        img_buffer = io.BytesIO()
+        new_image.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
 
-        # Ajouter un bouton pour envoyer l'image à l'iframe
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("Ajouter au panier"):
-                base64_img_with_prefix = f"data:image/png;base64,{base64_img}"  # Préfixe nécessaire pour le format base64
-                st.markdown(
-                    f'<script>parent.postMessage({{"image": "{base64_img_with_prefix}"}}, "*");</script>',
-                    unsafe_allow_html=True
-                )
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
         with col2:
-            # Le bouton de téléchargement d'image corrigé (sans duplication)
+            # Afficher les dimensions après le bouton de téléchargement
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+        with col3:
             st.download_button(
                 label="Télécharger l'image",
-                data=base64.b64decode(base64_img),
-                file_name="image_modifiee.png",
+                data=img_buffer,
+                file_name=file_name,
                 mime="image/png"
             )
 
-        # Affichage des dimensions de l'image
-        st.markdown(f"**Dimensions de l'image : {new_width:.2f} px x {new_height:.2f} px**")
+    else:
+        st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
-
-# Conseils d'utilisation
 st.markdown("""
-    ### 🗒 Conseils d'utilisation :
+    ### 📝 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
     - Préférez des images avec un bon contraste et des éléments bien définis.
     - Une **image carrée** donnera un meilleur résultat.
     - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
     - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
 """, unsafe_allow_html=True)
