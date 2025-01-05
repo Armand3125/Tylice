@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import io
 from datetime import datetime
+import requests
 
 # Dictionnaire des couleurs
 pal = {
@@ -53,10 +54,15 @@ with col2:
 
 num_selections = st.session_state.num_selections
 
-# Variables pour gérer la sélection et l'affichage de couleurs
-rectangle_width = 80 if num_selections == 4 else 50
-rectangle_height = 20
-cols = st.columns(num_selections * 2)
+# Fonction pour uploader l'image sur Cloudinary
+def upload_to_cloudinary(image_buffer):
+    url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
+    files = {"file": image_buffer}
+    data = {"upload_preset": "image_upload_tylice"}
+    response = requests.post(url, files=files, data=data)
+    if response.status_code == 200:
+        return response.json().get("secure_url")
+    return None
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
@@ -69,10 +75,10 @@ if uploaded_image is not None:
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
-    # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
+    # Conversion de pixels à centimètres
     px_per_cm = 25
-    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
-    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    new_width_cm = round(new_width / px_per_cm, 1)
+    new_height_cm = round(new_height / px_per_cm, 1)
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
@@ -100,21 +106,9 @@ if uploaded_image is not None:
         selected_colors = []
         selected_color_names = []
         for i, cluster_index in enumerate(sorted_indices):
-            with cols[i * 2]:
-                st.markdown("<div class='color-container'>", unsafe_allow_html=True)
-                for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
-                    color_rgb = pal[color_name]
-                    margin_class = "first-box" if j == 0 else ""
-                    st.markdown(
-                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
-                        unsafe_allow_html=True
-                    )
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            with cols[i * 2 + 1]:
-                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
-                selected_colors.append(pal[selected_color_name])
-                selected_color_names.append(selected_color_name)
+            selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+            selected_colors.append(pal[selected_color_name])
+            selected_color_names.append(selected_color_name)
 
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
@@ -134,39 +128,22 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+        # Upload to Cloudinary
+        img_url = upload_to_cloudinary(img_buffer)
 
-        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            # Afficher les dimensions après le bouton de téléchargement
-            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
-        with col3:
-            st.download_button(
-                label="Télécharger l'image",
-                data=img_buffer,
-                file_name=file_name,
-                mime="image/png"
-            )
+        if img_url:
+            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            product_name = f"Image personnalisée ({num_selections} couleurs)"
+            properties = {
+                "Image personnalisée": img_url,
+                "Dimensions": f"{new_width_cm} cm x {new_height_cm}",
+                "Couleurs sélectionnées": ", ".join(selected_color_names),
+            }
+            properties_encoded = "&".join([f"properties[{key}]={value}" for key, value in properties.items()])
+            shopify_url = f"https://tylice2.myshopify.com/cart/{variant_id}:1?{properties_encoded}"
 
-        # Ajout au panier
-        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-        product_name = f"Image personnalisée ({num_selections} couleurs)"
-        shopify_url = f"https://tylice2.myshopify.com/cart/{variant_id}:1"  # Ajouter l'ID de la variante sélectionnée avec une quantité de 1
-        
-        if st.button("Ajouter au panier"):
-            st.markdown(f"[Cliquez ici pour ajouter au panier]({shopify_url})", unsafe_allow_html=True)
-
+            st.markdown(f"[Ajouter au panier avec l'image]({shopify_url})", unsafe_allow_html=True)
+        else:
+            st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
-
-# Affichage des conseils d'utilisation
-st.markdown("""
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True)
