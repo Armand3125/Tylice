@@ -6,6 +6,7 @@ import io
 import base64
 import requests
 from datetime import datetime
+import re  # Pour nettoyer le nom du fichier
 
 # Dictionnaire des couleurs
 pal = {
@@ -139,7 +140,11 @@ if uploaded_image is not None:
 
         # Afficher le bouton de téléchargement de l'image modifiée
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+        
+        # Nettoyer le nom du fichier pour éviter les slashes
+        cleaned_name = "".join(selected_color_names)  # Nom du fichier basé sur les couleurs sélectionnées
+        cleaned_name = re.sub(r'[^\w\s-]', '', cleaned_name)  # Supprimer les caractères non valides
+        file_name = f"{cleaned_name}_{timestamp}.png"
 
         # Attendre que l'utilisateur appuie sur "Ajouter au panier"
         if st.button("Ajouter au panier"):
@@ -188,6 +193,7 @@ if uploaded_image is not None:
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
+
 
 # Affichage des conseils d'utilisation
 st.markdown("""
