@@ -130,26 +130,32 @@ if uploaded_image is not None:
         with col2:
             st.image(resized_image, use_container_width=True)
 
-        # Enregistrer l'image modifiée dans un buffer
         img_buffer = io.BytesIO()
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        # Nom de fichier simplifié pour éviter des caractères invalides
-        file_name = "imagetest.png"  # Nom simple et sans caractères spéciaux
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
-        # Bouton "Ajouter au panier"
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
+        with col2:
+            # Afficher les dimensions après le bouton de téléchargement
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+        with col3:
+            st.download_button(
+                label="Télécharger l'image",
+                data=img_buffer,
+                file_name=file_name,
+                mime="image/png"
+            )
+
+        # Ajout au panier
+        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+        product_name = f"Image personnalisée ({num_selections} couleurs)"
+        shopify_url = f"https://tylice2.myshopify.com/cart/{variant_id}:1"  # Ajouter l'ID de la variante sélectionnée avec une quantité de 1
+        
         if st.button("Ajouter au panier"):
-            # Afficher un message de confirmation (il ne fait rien d'autre ici pour l'instant)
-            st.success("L'image a été ajoutée au panier.")
-
-        # Afficher le bouton pour télécharger l'image modifiée
-        st.download_button(
-            label="Télécharger l'image modifiée",
-            data=img_buffer,
-            file_name=file_name,
-            mime="image/png"
-        )
+            st.markdown(f"[Cliquez ici pour ajouter au panier]({shopify_url})", unsafe_allow_html=True)
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
