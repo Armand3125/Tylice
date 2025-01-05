@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import io
 import base64
+import requests
 from datetime import datetime
 
 # Dictionnaire des couleurs
@@ -60,11 +61,6 @@ rectangle_height = 20
 cols = st.columns(num_selections * 2)
 
 # Traitement de l'image téléchargée
-def convert_image_to_base64(image):
-    buffered = io.BytesIO()
-    image.save(buffered, format="PNG")
-    return base64.b64encode(buffered.getvalue()).decode()
-
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
@@ -136,30 +132,55 @@ if uploaded_image is not None:
         with col2:
             st.image(resized_image, use_container_width=True)
 
-        base64_image = convert_image_to_base64(resized_image)
+        # Enregistrer l'image modifiée dans un buffer pour l'upload
+        img_buffer = io.BytesIO()
+        new_image.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
 
+        # Encoder l'image en base64
+        encoded_img = base64.b64encode(img_buffer.getvalue()).decode()
+
+        # Utilisation de Cloudinary pour télécharger l'image
+        cloud_name = "dprmsetgi"
+        upload_preset = "image_upload_tylice"
+        api_key = "623983875467285"
+
+        # Construction de l'URL pour l'upload
+        cloudinary_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
+        upload_params = {
+            'file': f"data:image/png;base64,{encoded_img}",
+            'upload_preset': upload_preset
+        }
+
+        # Faire l'upload sur Cloudinary
+        response = requests.post(cloudinary_url, data=upload_params)
+
+        if response.status_code == 200:
+            cloudinary_response = response.json()
+            image_url = cloudinary_response['secure_url']
+            st.success("Image téléchargée avec succès!")
+
+            # Générer l'URL du produit dans le panier Shopify
+            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            shopify_url = f"https://tylice2.myshopify.com/cart/{variant_id}:1?variant={variant_id}"  # URL pour ajouter au panier
+
+            # Afficher l'image dans le panier avec le lien d'ajout
+            st.markdown(f"[Cliquez ici pour ajouter l'image modifiée au panier](https://tylice2.myshopify.com/cart/{variant_id}:1)")
+
+            st.image(image_url, caption="Votre image modifiée", use_container_width=True)
+        else:
+            st.error("Une erreur est survenue lors de l'upload de l'image.")
+
+        # Afficher le bouton de téléchargement de l'image modifiée
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
-        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            # Afficher les dimensions après le bouton de téléchargement
-            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
-        with col3:
-            st.download_button(
-                label="Télécharger l'image",
-                data=base64_image,
-                file_name=file_name,
-                mime="image/png"
-            )
-
-        # Ajout au panier avec l'image en base64
-        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-        product_name = f"Image personnalisée ({num_selections} couleurs)"
-        shopify_url = f"https://tylice2.myshopify.com/cart/{variant_id}:1&properties[Image]={base64_image}"  # Ajouter l'image modifiée en base64 en tant que propriété
-        
-        if st.button("Ajouter au panier"):
-            st.markdown(f"[Cliquez ici pour ajouter au panier]({shopify_url})", unsafe_allow_html=True)
+        st.download_button(
+            label="Télécharger l'image modifiée",
+            data=img_buffer,
+            file_name=file_name,
+            mime="image/png"
+        )
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
