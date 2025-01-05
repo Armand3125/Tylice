@@ -145,26 +145,23 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        # Uploader l'image sur Cloudinary
-        cloudinary_url = upload_to_cloudinary(img_buffer)
-        if not cloudinary_url:
-            st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
-        else:
-            # Construire l'URL du panier Shopify
-            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-            shopify_cart_url = f"https://tylice2.myshopify.com/cart/{variant_id}:1?properties[Image URL]={cloudinary_url}"
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
+        with col2:
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
 
-            col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-            with col2:
-                st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
-            with col3:
-                st.download_button(
-                    label="Télécharger l'image",
-                    data=img_buffer,
-                    file_name="image_personnalisée.png",
-                    mime="image/png"
+        # Ajout au panier
+        if st.button("Ajouter au panier"):
+            # Upload image to Cloudinary
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            if not cloudinary_url:
+                st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
+            else:
+                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+                shopify_cart_url = (
+                    f"https://tylice2.myshopify.com/cart/{variant_id}:1"
+                    f"?properties[Image%20URL]={cloudinary_url}"
                 )
-            st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
