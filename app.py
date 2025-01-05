@@ -6,7 +6,6 @@ import io
 import base64
 import requests
 from datetime import datetime
-import re  # Pour nettoyer le nom du fichier
 
 # Dictionnaire des couleurs
 pal = {
@@ -138,11 +137,8 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        # Afficher le bouton de téléchargement de l'image modifiée
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-        # Renommer l'image avant de l'envoyer à Cloudinary en "imagetest"
-        file_name = "imagetest.png"  # Nom de fichier fixe
+        # Nom de fichier simplifié pour éviter des caractères invalides
+        file_name = "imagetest.png"  # Nom simple et sans caractères spéciaux
 
         # Attendre que l'utilisateur appuie sur "Ajouter au panier"
         if st.button("Ajouter au panier"):
@@ -191,6 +187,7 @@ if uploaded_image is not None:
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
+
 
 
 # Affichage des conseils d'utilisation
