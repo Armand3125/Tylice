@@ -5,7 +5,7 @@ from sklearn.cluster import KMeans
 import io
 from datetime import datetime
 
-
+# Dictionnaire des couleurs
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
@@ -19,6 +19,7 @@ pal = {
 
 st.title("Tylice")
 
+# Style personnalisé
 css = """
     <style>
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
@@ -33,8 +34,10 @@ css = """
 """
 st.markdown(css, unsafe_allow_html=True)
 
+# Téléchargement de l'image
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
+# Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
@@ -49,12 +52,13 @@ with col2:
         st.session_state.num_selections = 6
 
 num_selections = st.session_state.num_selections
-cols_percentages = st.columns(num_selections)
 
+# Variables pour gérer la sélection et l'affichage de couleurs
 rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
 
+# Traitement de l'image téléchargée
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
@@ -145,17 +149,18 @@ if uploaded_image is not None:
                 mime="image/png"
             )
 
-        # Ajouter au panier
-        product_price = 7.95 if num_selections == 4 else 11.95
+        # Ajout au panier
+        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
         product_name = f"Image personnalisée ({num_selections} couleurs)"
-        wix_cart_url = f"https:/tylice.com/cart-page?add_item=true&name={product_name}&price={product_price}&quantity=1"
-
+        shopify_url = f"https://tylice2.myshopify.com/cart/{variant_id}:1"  # Ajouter l'ID de la variante sélectionnée avec une quantité de 1
+        
         if st.button("Ajouter au panier"):
-            st.markdown(f"[Cliquez ici pour ajouter au panier]({wix_cart_url})", unsafe_allow_html=True)
+            st.markdown(f"[Cliquez ici pour ajouter au panier]({shopify_url})", unsafe_allow_html=True)
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
+# Affichage des conseils d'utilisation
 st.markdown("""
     ### 📝 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
