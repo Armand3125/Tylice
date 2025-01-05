@@ -157,16 +157,17 @@ if uploaded_image is not None:
         with col2:
             st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
 
-        # Ajout au panier
+        # Ajout au panier avec la nouvelle propriété personnalisée
         if st.button("Ajouter au panier"):
             cloudinary_url = upload_to_cloudinary(img_buffer)
             if not cloudinary_url:
                 st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
             else:
                 variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+                # Changer la propriété ici
                 shopify_cart_url = (
                     f"https://tylice2.myshopify.com/cart/{variant_id}:1"
-                    f"?properties[Image%20URL]={cloudinary_url}"
+                    f"?properties[CustomImage]={cloudinary_url}"  # Utiliser CustomImage au lieu de Image URL
                 )
                 st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
                 st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
