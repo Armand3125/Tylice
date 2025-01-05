@@ -141,10 +141,8 @@ if uploaded_image is not None:
         # Afficher le bouton de téléchargement de l'image modifiée
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Nettoyer le nom du fichier pour éviter les slashes
-        cleaned_name = "".join(selected_color_names)  # Nom du fichier basé sur les couleurs sélectionnées
-        cleaned_name = re.sub(r'[^\w\s-]', '', cleaned_name)  # Supprimer les caractères non valides
-        file_name = f"{cleaned_name}_{timestamp}.png"
+        # Renommer l'image avant de l'envoyer à Cloudinary en "imagetest"
+        file_name = "imagetest.png"  # Nom de fichier fixe
 
         # Attendre que l'utilisateur appuie sur "Ajouter au panier"
         if st.button("Ajouter au panier"):
@@ -193,7 +191,6 @@ if uploaded_image is not None:
 
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
-
 
 # Affichage des conseils d'utilisation
 st.markdown("""
