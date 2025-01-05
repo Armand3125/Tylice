@@ -1,14 +1,11 @@
 import streamlit as st
-import requests
-import base64
 from PIL import Image
 import numpy as np
+from sklearn.cluster import KMeans
+import io
+import base64
+import requests
 from datetime import datetime
-
-# Informations Cloudinary
-cloud_name = "dprmsetgi"
-upload_preset = "image_upload_tylice"
-cloudinary_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
 
 # Dictionnaire des couleurs
 pal = {
@@ -22,8 +19,7 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-# Titre
-st.title("Tylice - Personnalisez votre image")
+st.title("Tylice")
 
 # Style personnalisé
 css = """
@@ -41,7 +37,7 @@ css = """
 st.markdown(css, unsafe_allow_html=True)
 
 # Téléchargement de l'image
-uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
+uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
 # Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
@@ -81,7 +77,6 @@ if uploaded_image is not None:
     new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
     if img_arr.shape[-1] == 3:
-        # Appliquer KMeans pour la segmentation des couleurs
         pixels = img_arr.reshape(-1, 3)
         kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
         labels = kmeans.labels_
@@ -123,7 +118,6 @@ if uploaded_image is not None:
                 selected_colors.append(pal[selected_color_name])
                 selected_color_names.append(selected_color_name)
 
-        # Appliquer la nouvelle palette de couleurs à l'image
         new_img_arr = np.zeros_like(img_arr)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
@@ -138,29 +132,57 @@ if uploaded_image is not None:
         with col2:
             st.image(resized_image, use_container_width=True)
 
-        # Convertir l'image modifiée en base64
+        # Enregistrer l'image modifiée dans un buffer
         img_buffer = io.BytesIO()
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
-        img_base64 = base64.b64encode(img_buffer.read()).decode()
 
-        # Afficher un bouton "Ajouter au panier"
+        # Afficher le bouton de téléchargement de l'image modifiée
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+
+        # Attendre que l'utilisateur appuie sur "Ajouter au panier"
         if st.button("Ajouter au panier"):
-            # Upload de l'image sur Cloudinary (mode unsigned)
+            # Encoder l'image en base64
+            encoded_img = base64.b64encode(img_buffer.getvalue()).decode()
+
+            # Utilisation de Cloudinary pour télécharger l'image
+            cloud_name = "dprmsetgi"
+            upload_preset = "image_upload_tylice"
+            api_key = "623983875467285"
+
+            # Construction de l'URL pour l'upload
+            cloudinary_url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
             upload_params = {
-                'file': f"data:image/png;base64,{img_base64}",
+                'file': f"data:image/png;base64,{encoded_img}",
                 'upload_preset': upload_preset
             }
+
+            # Faire l'upload sur Cloudinary
             response = requests.post(cloudinary_url, data=upload_params)
 
             if response.status_code == 200:
                 cloudinary_response = response.json()
                 image_url = cloudinary_response['secure_url']
-                st.success(f"L'image a été ajoutée au panier ! [Voir l'image]({image_url})")
-                st.markdown(f"[Cliquez ici pour voir votre image personnalisée](%7Bimage_url%7D)")
+                st.success("Image téléchargée avec succès!")
+
+                # Afficher l'image téléchargée et ajouter au panier
+                st.image(image_url, caption="Votre image modifiée", use_container_width=True)
+                st.markdown(f"[Cliquez ici pour ajouter l'image modifiée au panier](https://tylice2.myshopify.com/cart/50063717106003:1)")
 
             else:
                 st.error("Une erreur est survenue lors de l'upload de l'image.")
+
+            # Afficher le bouton pour télécharger l'image modifiée
+            st.download_button(
+                label="Télécharger l'image modifiée",
+                data=img_buffer,
+                file_name=file_name,
+                mime="image/png"
+            )
+
+    else:
+        st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
 # Affichage des conseils d'utilisation
 st.markdown("""
