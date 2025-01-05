@@ -184,6 +184,7 @@ if uploaded_image is not None:
     else:
         st.error("L'image doit être en RGB (3 canaux) pour continuer.")
 
+
 # Affichage des conseils d'utilisation
 st.markdown("""
     ### 📝 Conseils d'utilisation :
