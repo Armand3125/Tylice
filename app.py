@@ -93,88 +93,88 @@ if uploaded_image is not None:
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
-        if pixels.shape[0] == 0:
-            st.error("L'image n'a pas de pixels valides.")
-        else:
-            try:
-                kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
-                labels = kmeans.labels_
-                centers = kmeans.cluster_centers_
+        kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
+        labels = kmeans.labels_
+        centers = kmeans.cluster_centers_
 
-                centers_rgb = np.array(centers, dtype=int)
-                pal_rgb = np.array(list(pal.values()), dtype=int)
-                distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
+        centers_rgb = np.array(centers, dtype=int)
+        pal_rgb = np.array(list(pal.values()), dtype=int)
+        distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
 
-                ordered_colors_by_cluster = []
-                for i in range(num_selections):
-                    closest_colors_idx = distances[i].argsort()
-                    ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
+        ordered_colors_by_cluster = []
+        for i in range(num_selections):
+            closest_colors_idx = distances[i].argsort()
+            ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
 
-                cluster_counts = np.bincount(labels)
-                total_pixels = len(labels)
-                cluster_percentages = (cluster_counts / total_pixels) * 100
+        cluster_counts = np.bincount(labels)
+        total_pixels = len(labels)
+        cluster_percentages = (cluster_counts / total_pixels) * 100
 
-                sorted_indices = np.argsort(-cluster_percentages)
-                sorted_percentages = cluster_percentages[sorted_indices]
-                sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
+        sorted_indices = np.argsort(-cluster_percentages)
+        sorted_percentages = cluster_percentages[sorted_indices]
+        sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
 
-                selected_colors = []
-                selected_color_names = []
-                for i, cluster_index in enumerate(sorted_indices):
-                    with cols[i * 2]:
-                        st.markdown("<div class='color-container'>", unsafe_allow_html=True)
-                        for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
-                            color_rgb = pal[color_name]
-                            margin_class = "first-box" if j == 0 else ""
-                            st.markdown(
-                                f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
-                                unsafe_allow_html=True
-                            )
-                        st.markdown("</div>", unsafe_allow_html=True)
-
-                    with cols[i * 2 + 1]:
-                        selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
-                        selected_colors.append(pal[selected_color_name])
-                        selected_color_names.append(selected_color_name)
-
-                new_img_arr = np.zeros_like(img_arr)
-                for i in range(img_arr.shape[0]):
-                    for j in range(img_arr.shape[1]):
-                        lbl = labels[i * img_arr.shape[1] + j]
-                        new_color_index = np.where(sorted_indices == lbl)[0][0]
-                        new_img_arr[i, j] = selected_colors[new_color_index]
-
-                new_image = Image.fromarray(new_img_arr.astype('uint8'))
-                resized_image = new_image
-
-                col1, col2, col3 = st.columns([1, 6, 1])
-                with col2:
-                    st.image(resized_image, use_container_width=True)
-
-                img_buffer = io.BytesIO()
-                new_image.save(img_buffer, format="PNG")
-                img_buffer.seek(0)
-
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
-
-                col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-                with col2:
-                    st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
-
-                # Téléchargement de l'image sur Cloudinary
-                cloudinary_url = upload_to_cloudinary(img_buffer)
-                if cloudinary_url:
-                    variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                    encoded_url = urllib.parse.quote(cloudinary_url)
-                    shopify_cart_url = (
-                        f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+        selected_colors = []
+        selected_color_names = []
+        for i, cluster_index in enumerate(sorted_indices):
+            with cols[i * 2]:
+                st.markdown("<div class='color-container'>", unsafe_allow_html=True)
+                for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
+                    color_rgb = pal[color_name]
+                    margin_class = "first-box" if j == 0 else ""
+                    st.markdown(
+                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        unsafe_allow_html=True
                     )
-                    # Bouton pour ajouter au panier
-                    st.markdown(f"<a href='{shopify_cart_url}' target='_blank'><button style='background-color:#4CAF50;color:white;padding:10px 20px;border:none;border-radius:5px;font-size:16px;'>Ajouter au panier</button></a>", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
-            except Exception as e:
-                st.error(f"Erreur lors du clustering de l'image : {e}")
+            with cols[i * 2 + 1]:
+                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+                selected_colors.append(pal[selected_color_name])
+                selected_color_names.append(selected_color_name)
+
+        new_img_arr = np.zeros_like(img_arr)
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                lbl = labels[i * img_arr.shape[1] + j]
+                new_color_index = np.where(sorted_indices == lbl)[0][0]
+                new_img_arr[i, j] = selected_colors[new_color_index]
+
+        new_image = Image.fromarray(new_img_arr.astype('uint8'))
+        resized_image = new_image
+
+        col1, col2, col3 = st.columns([1, 6, 1])
+        with col2:
+            st.image(resized_image, use_container_width=True)
+
+        img_buffer = io.BytesIO()
+        new_image.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
+        with col2:
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+
+        # Téléchargement de l'image sur Cloudinary
+        cloudinary_url = upload_to_cloudinary(img_buffer)
+        if cloudinary_url:
+            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            encoded_url = urllib.parse.quote(cloudinary_url)
+
+            # Envoi des données au panier via l'iframe sans ouvrir de nouvelle fenêtre
+            st.markdown(f"""
+                <script>
+                // Envoi d'un message à l'iframe pour ajouter l'article au panier
+                window.parent.postMessage({{
+                    type: 'addToCart',
+                    variantId: '{variant_id}',
+                    imageUrl: '{cloudinary_url}'
+                }}, '*');
+                </script>
+            """, unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
