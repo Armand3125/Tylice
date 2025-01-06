@@ -162,18 +162,15 @@ if uploaded_image is not None:
 
             # Affichage du bouton d'ajout au panier
             if st.button("Ajouter au panier"):
-                # On utilise st.components.v1.html pour exécuter le JavaScript pour ajouter au panier
+                # Utilisation de JavaScript pour ajouter le produit au panier dans un nouvel onglet
                 st.components.v1.html(f"""
                     <script>
-                        fetch("{shopify_cart_url}")
-                            .then(response => {{
-                                if (response.ok) {{
-                                    alert('Article ajouté au panier avec succès !');
-                                }} else {{
-                                    alert('Une erreur est survenue lors de l\'ajout au panier.');
-                                }}
-                            }})
-                            .catch(error => alert('Erreur réseau : ' + error));
+                        var win = window.open("{shopify_cart_url}", '_blank');
+                        if (win) {{
+                            win.focus();
+                        }} else {{
+                            alert('Impossible d\'ouvrir une nouvelle fenêtre. Veuillez vérifier vos paramètres de navigateur.');
+                        }}
                     </script>
                 """, height=0)
 
