@@ -88,8 +88,8 @@ if uploaded_image is not None:
 
     # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
     px_per_cm = 25
-    new_width_cm = round(new_width / px_per_cm, 1)
-    new_height_cm = round(new_height / px_per_cm, 1)
+    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
     if img_arr.shape[-1] == 3:
         pixels = img_arr.reshape(-1, 3)
@@ -155,14 +155,16 @@ if uploaded_image is not None:
         if cloudinary_url:
             variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
             encoded_url = urllib.parse.quote(cloudinary_url)
-
-            # Redirection vers la page du panier
             shopify_cart_url = (
-                f"https://tylice2.myshopify.com/cart?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+                f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
-            st.markdown(f"[Accéder au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
-        else:
-            st.error("Erreur lors du téléchargement de l'image.")
+            # Redirection automatique
+            redirect_script = f"""
+                <script>
+                    window.location.href = "{shopify_cart_url}";
+                </script>
+            """
+            st.markdown(redirect_script, unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
