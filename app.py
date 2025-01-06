@@ -159,10 +159,12 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
-            # Ajout de l'URL et exécution automatique avec Streamlit HTML/Javascript
-            st.components.v1.html(f"""
-                <script>
-                    function addToCart() {{
+
+            # Affichage du bouton d'ajout au panier
+            if st.button("Ajouter au panier"):
+                # On utilise st.components.v1.html pour exécuter le JavaScript pour ajouter au panier
+                st.components.v1.html(f"""
+                    <script>
                         fetch("{shopify_cart_url}")
                             .then(response => {{
                                 if (response.ok) {{
@@ -172,10 +174,8 @@ if uploaded_image is not None:
                                 }}
                             }})
                             .catch(error => alert('Erreur réseau : ' + error));
-                    }}
-                    addToCart();
-                </script>
-            """, height=0)
+                    </script>
+                """, height=0)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
