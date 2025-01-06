@@ -168,21 +168,20 @@ if uploaded_image is not None:
                 # Encodage de l'URL pour Shopify
                 encoded_url = urllib.parse.quote(cloudinary_url)
 
-                # Construire la requête d'ajout au panier
-                cart_url = f"https://tylice2.myshopify.com/cart/add.js"
-                data = {
-                    "id": variant_id,
-                    "quantity": 1,
-                    "properties[Image]": cloudinary_url  # L'URL de l'image sur Cloudinary
-                }
+                # Construire l'URL d'ajout au panier
+                shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
 
-                # Envoi de la requête POST pour ajouter au panier
-                response = requests.post(cart_url, json=data)
+                # Affichage du lien pour ajouter au panier
+                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
 
-                if response.status_code == 200:
-                    st.success("Image ajoutée au panier avec succès !")
-                else:
-                    st.error("Une erreur s'est produite lors de l'ajout au panier.")
+                # Redirection automatique après ajout au panier
+                st.markdown(f"<a href='{shopify_cart_url}' target='_blank' id='auto_add_to_cart'></a>", unsafe_allow_html=True)
+                st.markdown("""
+                    <script>
+                        document.getElementById('auto_add_to_cart').click();
+                    </script>
+                """, unsafe_allow_html=True)
+
 
 # Affichage des conseils d'utilisation
 st.markdown("""
