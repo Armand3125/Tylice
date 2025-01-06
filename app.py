@@ -165,26 +165,29 @@ if uploaded_image is not None:
             encoded_url = urllib.parse.quote(cloudinary_url)
 
             # Afficher le bouton d'ajout au panier
+            st.markdown(f"<h4>Cloudinary URL: {cloudinary_url}</h4>", unsafe_allow_html=True)  # Debugging: Cloudinary URL
+            st.markdown(f"<h4>Variant ID: {variant_id}</h4>", unsafe_allow_html=True)  # Debugging: Variant ID
+
             if st.button("Ajouter au panier"):
+                # Affichage pour debugging
+                st.markdown("<h4>Ajout au panier en cours...</h4>", unsafe_allow_html=True)  # Debugging: Button clicked
                 st.markdown(f"""
                     <script>
+                    // Affichage du message avant l'envoi
+                    console.log('Envoi du message à l\'iframe...');
+
                     // Envoi d'un message à l'iframe pour ajouter l'article au panier
                     window.parent.postMessage({{
                         type: 'addToCart',
                         variantId: '{variant_id}',
                         imageUrl: '{cloudinary_url}'
                     }}, '*');
+
+                    // Alerte de confirmation
                     alert("Image ajoutée au panier !");
+                    console.log('Message envoyé au parent iframe.');
                     </script>
                 """, unsafe_allow_html=True)
+        else:
+            st.error("Erreur de téléchargement de l'image sur Cloudinary.")
 
-# Affichage des conseils d'utilisation
-st.markdown("""
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True)
