@@ -158,16 +158,21 @@ if uploaded_image is not None:
         with col2:
             st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
 
-        # Générer l'URL d'ajout au panier avec la nouvelle propriété personnalisée
-        cloudinary_url = upload_to_cloudinary(img_buffer)
-        if cloudinary_url:
-            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-            encoded_url = urllib.parse.quote(cloudinary_url)
-            shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
-
-            # Ajouter au panier avec un lien fonctionnel
-            if st.button("Ajouter au panier"):
-                st.markdown(f'<a href="{shopify_cart_url}" target="_blank"><button style="padding:10px;background-color:#007bff;color:white;border:none;border-radius:5px;">Ajouter au panier</button></a>', unsafe_allow_html=True)
+        # Ajout au panier avec la nouvelle propriété personnalisée
+        if st.button("Ajouter au panier"):
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            if not cloudinary_url:
+                st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
+            else:
+                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+                # Encodage de l'URL pour Shopify
+                encoded_url = urllib.parse.quote(cloudinary_url)
+                # Utilisation de la bonne URL pour ajouter au panier
+                shopify_cart_url = (
+                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+                )
+                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
