@@ -166,31 +166,34 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
-            # Intégration JavaScript pour l'ajout au panier sans afficher la réponse
-            st.markdown(f"""
-                <script>
-                    fetch("{shopify_cart_url}", {{
-                        method: "POST",
-                        headers: {{
-                            "Content-Type": "application/json"
-                        }},
-                        body: JSON.stringify({{
-                            id: "{variant_id}",
-                            quantity: 1,
-                            properties: {{
-                                Image: "{encoded_url}"
-                            }}
+
+            # Affichage du bouton d'ajout au panier
+            if st.button("Ajouter au panier"):
+                # Exécuter la requête AJAX en arrière-plan sans afficher la réponse JSON
+                st.markdown(f"""
+                    <script>
+                        fetch("{shopify_cart_url}", {{
+                            method: "POST",
+                            headers: {{
+                                "Content-Type": "application/json"
+                            }},
+                            body: JSON.stringify({{
+                                id: "{variant_id}",
+                                quantity: 1,
+                                properties: {{
+                                    Image: "{encoded_url}"
+                                }}
+                            }})
                         }})
-                    }})
-                    .then(response => response.json())
-                    .then(data => {{
-                        console.log("Produit ajouté au panier", data);
-                    }})
-                    .catch(error => {{
-                        console.error("Erreur d'ajout au panier", error);
-                    }});
-                </script>
-            """, unsafe_allow_html=True)
+                        .then(response => response.json())
+                        .then(data => {{
+                            console.log("Produit ajouté au panier", data);
+                        }})
+                        .catch(error => {{
+                            console.error("Erreur d'ajout au panier", error);
+                        }});
+                    </script>
+                """, unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
