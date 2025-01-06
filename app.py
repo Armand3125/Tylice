@@ -171,14 +171,10 @@ if uploaded_image is not None:
                 # Construire l'URL d'ajout au panier
                 shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
 
-                # Affichage du lien pour ajouter au panier
-                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
-
                 # Redirection automatique après ajout au panier
-                st.markdown(f"<a href='{shopify_cart_url}' target='_blank' id='auto_add_to_cart'></a>", unsafe_allow_html=True)
-                st.markdown("""
+                st.markdown(f"""
                     <script>
-                        document.getElementById('auto_add_to_cart').click();
+                        window.location.href = "{shopify_cart_url}";
                     </script>
                 """, unsafe_allow_html=True)
 
