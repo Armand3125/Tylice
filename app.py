@@ -171,8 +171,9 @@ if uploaded_image is not None:
                 # Construire l'URL d'ajout au panier
                 shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
 
-                # Utiliser un bouton pour ouvrir directement l'URL dans une nouvelle fenêtre
-                st.markdown(f'<a href="{shopify_cart_url}" target="_blank" id="shopify-link"><button style="padding:10px;background-color:#007bff;color:white;border:none;border-radius:5px;">Ajouter au panier</button></a>', unsafe_allow_html=True)
+                # Lien qui ouvre dans un nouvel onglet
+                st.markdown(f'<a href="{shopify_cart_url}" target="_blank"><button style="padding:10px;background-color:#007bff;color:white;border:none;border-radius:5px;">Ajouter au panier</button></a>', unsafe_allow_html=True)
+
 
 # Affichage des conseils d'utilisation
 st.markdown("""
