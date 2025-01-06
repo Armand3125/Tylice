@@ -55,11 +55,6 @@ with col2:
 
 num_selections = st.session_state.num_selections
 
-# Variables pour gérer la sélection et l'affichage de couleurs
-rectangle_width = 80 if num_selections == 4 else 50
-rectangle_height = 20
-cols = st.columns(num_selections * 2)
-
 # Fonction pour télécharger l'image sur Cloudinary
 def upload_to_cloudinary(image_buffer):
     url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
@@ -117,38 +112,23 @@ if uploaded_image is not None:
         selected_colors = []
         selected_color_names = []
         for i, cluster_index in enumerate(sorted_indices):
-            with cols[i * 2]:
+            with st.columns(num_selections * 2)[i * 2]:
                 st.markdown("<div class='color-container'>", unsafe_allow_html=True)
                 for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
                     color_rgb = pal[color_name]
                     margin_class = "first-box" if j == 0 else ""
                     st.markdown(
-                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; border-radius: 5px; margin-bottom: 4px;'></div>",
                         unsafe_allow_html=True
                     )
                 st.markdown("</div>", unsafe_allow_html=True)
 
-            with cols[i * 2 + 1]:
-                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
-                selected_colors.append(pal[selected_color_name])
-                selected_color_names.append(selected_color_name)
-
-        new_img_arr = np.zeros_like(img_arr)
-        for i in range(img_arr.shape[0]):
-            for j in range(img_arr.shape[1]):
-                lbl = labels[i * img_arr.shape[1] + j]
-                new_color_index = np.where(sorted_indices == lbl)[0][0]
-                new_img_arr[i, j] = selected_colors[new_color_index]
-
-        new_image = Image.fromarray(new_img_arr.astype('uint8'))
-        resized_image = new_image
-
-        col1, col2, col3 = st.columns([1, 6, 1])
-        with col2:
-            st.image(resized_image, use_container_width=True)
+            selected_color_names.append(
+                st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+            )
 
         img_buffer = io.BytesIO()
-        new_image.save(img_buffer, format="PNG")
+        resized_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
         cloudinary_url = upload_to_cloudinary(img_buffer)
@@ -158,13 +138,21 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
-            # Redirection automatique
-            redirect_script = f"""
+            st.markdown(
+                f"""
                 <script>
-                    window.location.href = "{shopify_cart_url}";
+                    fetch("{shopify_cart_url}", {{ method: "GET" }})
+                        .then(() => {{
+                            alert("Image ajoutée au panier !");
+                        }})
+                        .catch(() => {{
+                            alert("Erreur lors de l'ajout au panier !");
+                        }});
                 </script>
-            """
-            st.markdown(redirect_script, unsafe_allow_html=True)
+                """,
+                unsafe_allow_html=True,
+            )
+
 
 # Affichage des conseils d'utilisation
 st.markdown("""
