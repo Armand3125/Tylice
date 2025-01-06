@@ -171,8 +171,9 @@ if uploaded_image is not None:
                 shopify_cart_url = (
                     f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
                 )
-                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
-                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
+                # Ajout directement au panier sans lien affiché
+                requests.post(shopify_cart_url)  # Effectue l'ajout directement au panier
+                st.success("Image ajoutée au panier avec succès !")
 
 # Affichage des conseils d'utilisation
 st.markdown("""
