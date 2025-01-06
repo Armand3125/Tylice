@@ -167,31 +167,19 @@ if uploaded_image is not None:
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
 
-            # Affichage du bouton d'ajout au panier
+            # Affichage du bouton d'ajout au panier et envoi via iframe
             if st.button("Ajouter au panier"):
-                # Exécuter la requête AJAX en arrière-plan sans afficher la réponse JSON
+                # Envoi du message via postMessage() à l'iframe Shopify
                 st.markdown(f"""
                     <script>
-                        fetch("{shopify_cart_url}", {{
-                            method: "POST",
-                            headers: {{
-                                "Content-Type": "application/json"
-                            }},
-                            body: JSON.stringify({{
-                                id: "{variant_id}",
-                                quantity: 1,
-                                properties: {{
-                                    Image: "{encoded_url}"
-                                }}
-                            }})
-                        }})
-                        .then(response => response.json())
-                        .then(data => {{
-                            console.log("Produit ajouté au panier", data);
-                        }})
-                        .catch(error => {{
-                            console.error("Erreur d'ajout au panier", error);
-                        }});
+                        var iframe = document.querySelector('iframe');
+                        var data = {{
+                            action: "add_to_cart",
+                            variant_id: "{variant_id}",
+                            image_url: "{encoded_url}",
+                            quantity: 1
+                        }};
+                        iframe.contentWindow.postMessage(data, "*");
                     </script>
                 """, unsafe_allow_html=True)
 
