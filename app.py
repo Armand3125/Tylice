@@ -158,7 +158,7 @@ if uploaded_image is not None:
         with col2:
             st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
 
-        # Téléchargement de l'image sur Cloudinary
+        # Téléchargement et redirection automatique
         cloudinary_url = upload_to_cloudinary(img_buffer)
         if cloudinary_url:
             variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
@@ -166,7 +166,15 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
-            st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+            # Redirection automatique
+            st.markdown(
+                f"""
+                <script>
+                window.location.href = "{shopify_cart_url}";
+                </script>
+                """,
+                unsafe_allow_html=True,
+            )
 
 # Affichage des conseils d'utilisation
 st.markdown("""
