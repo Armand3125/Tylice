@@ -167,14 +167,18 @@ if uploaded_image is not None:
                 variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
                 # Encodage de l'URL pour Shopify
                 encoded_url = urllib.parse.quote(cloudinary_url)
-                # Utilisation de la bonne URL pour ajouter au panier et ouverture dans un nouvel onglet
+                # URL cachée qui redirige vers le panier Shopify
                 shopify_cart_url = (
                     f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
                 )
-                st.markdown(f"[Ajouter au panier avec l'image générée]( {shopify_cart_url} )", unsafe_allow_html=True)
+                
+                # Afficher un message de succès et ne pas afficher la réponse brute
+                st.success("L'image a été ajoutée au panier.")
+                st.markdown(f"[Cliquez ici pour voir votre panier](https://tylice2.myshopify.com/cart)", unsafe_allow_html=True)
 
-                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
-
+                # Optionnellement, pour ne pas afficher de réponse brute, tu peux ne pas afficher l'URL et seulement proposer le lien vers le panier.
+                # Le lien vers le panier ouvrira une nouvelle fenêtre sans montrer la réponse brute.
+                
 # Affichage des conseils d'utilisation
 st.markdown("""
     ### 📝 Conseils d'utilisation :
