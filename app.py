@@ -169,15 +169,23 @@ if uploaded_image is not None:
                 encoded_url = urllib.parse.quote(cloudinary_url)
                 # URL cachée qui redirige vers le panier Shopify
                 shopify_cart_url = (
-                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+                    f"https://tylice2.myshopify.com/cart/add.js"
+                    f"?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
                 )
-                
-                # Afficher un message de succès et ne pas afficher la réponse brute
-                st.success("L'image a été ajoutée au panier.")
-                st.markdown(f"[Cliquez ici pour voir votre panier](https://tylice2.myshopify.com/cart)", unsafe_allow_html=True)
 
-                # Optionnellement, pour ne pas afficher de réponse brute, tu peux ne pas afficher l'URL et seulement proposer le lien vers le panier.
-                # Le lien vers le panier ouvrira une nouvelle fenêtre sans montrer la réponse brute.
+                # Envoi de la requête pour ajouter l'article au panier
+                try:
+                    response = requests.post(shopify_cart_url)
+                    if response.status_code == 200:
+                        st.success("L'image a été ajoutée au panier !")
+                    else:
+                        st.error(f"Erreur lors de l'ajout au panier: {response.status_code}")
+                except Exception as e:
+                    st.error(f"Erreur de connexion: {e}")
+                
+                # Lien vers le panier
+                st.markdown(f"[Voir votre panier](https://tylice2.myshopify.com/cart)")
+
                 
 # Affichage des conseils d'utilisation
 st.markdown("""
