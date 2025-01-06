@@ -5,6 +5,7 @@ from sklearn.cluster import KMeans
 import io
 from datetime import datetime
 import requests
+import urllib.parse
 
 # Dictionnaire des couleurs
 pal = {
@@ -164,10 +165,11 @@ if uploaded_image is not None:
                 st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
             else:
                 variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                # Utilisation de la propriété d'image dans l'URL de la requête
+                # Encodage de l'URL pour Shopify
+                encoded_url = urllib.parse.quote(cloudinary_url)
+                # Utilisation de la bonne URL pour ajouter au panier
                 shopify_cart_url = (
-                    f"https://tylice2.myshopify.com/cart/{variant_id}:1"
-                    f"?properties[Image]={cloudinary_url}"  # Propriété de l'image
+                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
                 )
                 st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
                 st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
