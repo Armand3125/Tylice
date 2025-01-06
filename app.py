@@ -169,7 +169,7 @@ if uploaded_image is not None:
             st.markdown(f"<h4>Variant ID: {variant_id}</h4>", unsafe_allow_html=True)  # Debugging: Variant ID
 
             if st.button("Ajouter au panier"):
-                # Affichage pour debugging
+                # Debugging : afficher le message avant d'envoyer
                 st.markdown("<h4>Ajout au panier en cours...</h4>", unsafe_allow_html=True)  # Debugging: Button clicked
                 st.markdown(f"""
                     <script>
@@ -183,11 +183,9 @@ if uploaded_image is not None:
                         imageUrl: '{cloudinary_url}'
                     }}, '*');
 
-                    // Alerte de confirmation
-                    alert("Image ajoutée au panier !");
+                    // Pas d'alerte pour éviter le popup, seulement un message console.
                     console.log('Message envoyé au parent iframe.');
                     </script>
                 """, unsafe_allow_html=True)
         else:
             st.error("Erreur de téléchargement de l'image sur Cloudinary.")
-
