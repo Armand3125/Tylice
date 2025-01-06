@@ -166,7 +166,7 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
-            # Bouton pour ajouter au panier
+            # Bouton pour ajouter au panier sans afficher la réponse JSON
             st.markdown(f"<a href='{shopify_cart_url}' target='_blank'><button style='background-color:#4CAF50;color:white;padding:10px 20px;border:none;border-radius:5px;font-size:16px;'>Ajouter au panier</button></a>", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
