@@ -159,20 +159,23 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
-            # Ajout d'un bouton pour ajouter au panier
-            st.markdown(f"""
-                <a href="#" onclick="fetch('{shopify_cart_url}')
-                    .then(response => {{
-                        if (response.ok) {{
-                            alert('Article ajouté au panier avec succès !');
-                        }} else {{
-                            alert('Une erreur est survenue lors de l\'ajout au panier.');
-                        }}
-                    }}).catch(error => alert('Erreur réseau : ' + error)); return false;" 
-                    class="btn btn-primary">
-                    Ajouter au panier
-                </a>
-            """, unsafe_allow_html=True)
+            # Ajout de l'URL et exécution automatique avec Streamlit HTML/Javascript
+            st.components.v1.html(f"""
+                <script>
+                    function addToCart() {{
+                        fetch("{shopify_cart_url}")
+                            .then(response => {{
+                                if (response.ok) {{
+                                    alert('Article ajouté au panier avec succès !');
+                                }} else {{
+                                    alert('Une erreur est survenue lors de l\'ajout au panier.');
+                                }}
+                            }})
+                            .catch(error => alert('Erreur réseau : ' + error));
+                    }}
+                    addToCart();
+                </script>
+            """, height=0)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
