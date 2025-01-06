@@ -151,6 +151,13 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
+        with col2:
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+
         # Téléchargement de l'image sur Cloudinary
         cloudinary_url = upload_to_cloudinary(img_buffer)
         if cloudinary_url:
@@ -159,20 +166,7 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
             )
-
-            # Affichage du bouton d'ajout au panier
-            if st.button("Ajouter au panier"):
-                # Utilisation de JavaScript pour ajouter le produit au panier dans un nouvel onglet
-                st.components.v1.html(f"""
-                    <script>
-                        var win = window.open("{shopify_cart_url}", '_blank');
-                        if (win) {{
-                            win.focus();
-                        }} else {{
-                            alert('Impossible d\'ouvrir une nouvelle fenêtre. Veuillez vérifier vos paramètres de navigateur.');
-                        }}
-                    </script>
-                """, height=0)
+            st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
