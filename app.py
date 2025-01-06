@@ -165,7 +165,8 @@ if uploaded_image is not None:
             encoded_url = urllib.parse.quote(cloudinary_url)
             shopify_cart_url = f"https://tylice2.myshopify.com/cart/{variant_id}:1?properties[Image]={encoded_url}"
             st.success("Votre image a été générée avec succès !")
-            st.markdown(f"[Cliquez ici pour voir votre panier et finaliser votre commande]({shopify_cart_url})", unsafe_allow_html=True)
+            st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+            st.markdown(f"[Voir ou télécharger l'image générée seule]({cloudinary_url})", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
