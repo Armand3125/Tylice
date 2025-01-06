@@ -164,17 +164,19 @@ if uploaded_image is not None:
             variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
             encoded_url = urllib.parse.quote(cloudinary_url)
 
-            # Envoi des données au panier via l'iframe sans ouvrir de nouvelle fenêtre
-            st.markdown(f"""
-                <script>
-                // Envoi d'un message à l'iframe pour ajouter l'article au panier
-                window.parent.postMessage({{
-                    type: 'addToCart',
-                    variantId: '{variant_id}',
-                    imageUrl: '{cloudinary_url}'
-                }}, '*');
-                </script>
-            """, unsafe_allow_html=True)
+            # Afficher le bouton d'ajout au panier
+            if st.button("Ajouter au panier"):
+                st.markdown(f"""
+                    <script>
+                    // Envoi d'un message à l'iframe pour ajouter l'article au panier
+                    window.parent.postMessage({{
+                        type: 'addToCart',
+                        variantId: '{variant_id}',
+                        imageUrl: '{cloudinary_url}'
+                    }}, '*');
+                    alert("Image ajoutée au panier !");
+                    </script>
+                """, unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
