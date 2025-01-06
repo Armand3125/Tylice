@@ -164,10 +164,10 @@ if uploaded_image is not None:
                 st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
             else:
                 variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                # Changer la propriété ici
+                # Utilisation de la propriété d'image dans l'URL de la requête
                 shopify_cart_url = (
                     f"https://tylice2.myshopify.com/cart/{variant_id}:1"
-                    f"?properties[CustomImage]={cloudinary_url}"  # Utiliser CustomImage au lieu de Image URL
+                    f"?properties[Image]={cloudinary_url}"  # Propriété de l'image
                 )
                 st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
                 st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
