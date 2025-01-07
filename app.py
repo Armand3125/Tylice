@@ -75,45 +75,104 @@ def upload_to_cloudinary(image_buffer):
         st.error(f"Erreur Cloudinary : {e}")
         return None
 
-# Fonction pour ajouter au panier Shopify
-def add_to_shopify_cart(variant_id, image_url):
-    cart_url = f"https://tylice2.myshopify.com/cart/add.js"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = {
-        "items": [{
-            "id": variant_id,
-            "quantity": 1,
-            "properties": {"Image": image_url}
-        }]
-    }
-    response = requests.post(cart_url, json=data, headers=headers)
-    return response.status_code == 200, response.json()
-
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
-    resized_image = image.resize((350, 350))
-    img_buffer = io.BytesIO()
-    resized_image.save(img_buffer, format="PNG")
-    img_buffer.seek(0)
+    width, height = image.size
+    dim = 350
+    new_width = dim if width > height else int((dim / height) * width)
+    new_height = dim if height >= width else int((dim / width) * height)
 
-    cloudinary_url = upload_to_cloudinary(img_buffer)
-    if not cloudinary_url:
-        st.error("Échec du téléchargement de l'image.")
-    else:
-        st.image(resized_image, caption="Aperçu de l'image téléchargée", use_column_width=True)
-        st.markdown(f"Image uploadée avec succès : {cloudinary_url}")
+    resized_image = image.resize((new_width, new_height))
+    img_arr = np.array(resized_image)
 
+    # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
+    px_per_cm = 25
+    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+
+    if img_arr.shape[-1] == 3:
+        pixels = img_arr.reshape(-1, 3)
+        kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
+        labels = kmeans.labels_
+        centers = kmeans.cluster_centers_
+
+        centers_rgb = np.array(centers, dtype=int)
+        pal_rgb = np.array(list(pal.values()), dtype=int)
+        distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
+
+        ordered_colors_by_cluster = []
+        for i in range(num_selections):
+            closest_colors_idx = distances[i].argsort()
+            ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
+
+        cluster_counts = np.bincount(labels)
+        total_pixels = len(labels)
+        cluster_percentages = (cluster_counts / total_pixels) * 100
+
+        sorted_indices = np.argsort(-cluster_percentages)
+        sorted_percentages = cluster_percentages[sorted_indices]
+        sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
+
+        selected_colors = []
+        selected_color_names = []
+        for i, cluster_index in enumerate(sorted_indices):
+            with cols[i * 2]:
+                st.markdown("<div class='color-container'>", unsafe_allow_html=True)
+                for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
+                    color_rgb = pal[color_name]
+                    margin_class = "first-box" if j == 0 else ""
+                    st.markdown(
+                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        unsafe_allow_html=True
+                    )
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with cols[i * 2 + 1]:
+                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+                selected_colors.append(pal[selected_color_name])
+                selected_color_names.append(selected_color_name)
+
+        new_img_arr = np.zeros_like(img_arr)
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                lbl = labels[i * img_arr.shape[1] + j]
+                new_color_index = np.where(sorted_indices == lbl)[0][0]
+                new_img_arr[i, j] = selected_colors[new_color_index]
+
+        new_image = Image.fromarray(new_img_arr.astype('uint8'))
+        resized_image = new_image
+
+        col1, col2, col3 = st.columns([1, 6, 1])
+        with col2:
+            st.image(resized_image, use_container_width=True)
+
+        img_buffer = io.BytesIO()
+        new_image.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
+        with col2:
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+
+        # Ajout au panier avec la nouvelle propriété personnalisée
         if st.button("Ajouter au panier"):
-            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-            success, response = add_to_shopify_cart(variant_id, cloudinary_url)
-            if success:
-                st.success("Produit ajouté au panier avec succès !")
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            if not cloudinary_url:
+                st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
             else:
-                st.error("Erreur lors de l'ajout au panier.")
-                st.write(response)
+                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+                # Encodage de l'URL pour Shopify
+                encoded_url = urllib.parse.quote(cloudinary_url)
+                # Utilisation de la bonne URL pour ajouter au panier
+                shopify_cart_url = (
+                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+                )
+                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
