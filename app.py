@@ -173,15 +173,19 @@ if uploaded_image is not None:
                 response = requests.post(shopify_cart_url, headers={"Content-Type": "application/json"})
                 try:
                     data = response.json()
-                    if 'items' in data:
+                    if 'key' in data:  # Vérifie si un article a été ajouté
                         st.success("Produit ajouté au panier avec succès!")
-                        for item in data['items']:
-                            st.image(item['image'], width=100)
-                            st.write(f"Produit : {item['title']}")
-                            st.write(f"Quantité : {item['quantity']}")
+                        # Affichez les détails de l'article ajouté
+                        st.write(f"**Produit :** {data['title']}")
+                        st.write(f"**Quantité :** {data['quantity']}")
+                        st.write(f"**Prix total :** {data['line_price'] / 100:.2f} €")
+                        if data['properties'].get('Image'):
+                            st.image(data['properties']['Image'], width=100)
+                        else:
+                            st.write("Aucune image associée.")
                     else:
                         st.error("Aucun produit n'a été ajouté au panier. Réponse inattendue.")
-                        st.write(data)
+                        st.write(data)  # Affiche la réponse pour le diagnostic
                 except Exception as e:
                     st.error("Erreur lors du traitement de la réponse.")
                     st.write(f"Exception: {e}")
