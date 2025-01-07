@@ -6,7 +6,6 @@ import io
 from datetime import datetime
 import requests
 import urllib.parse
-import json
 
 # Dictionnaire des couleurs
 pal = {
@@ -33,6 +32,7 @@ css = """
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
+        iframe { display: none; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
@@ -76,12 +76,12 @@ def upload_to_cloudinary(image_buffer):
         st.error(f"Erreur Cloudinary : {e}")
         return None
 
-# Fonction pour ajouter un produit au panier Shopify en utilisant une iframe cachée
-def add_to_cart_via_iframe(url):
-    html_code = f"""
-    <iframe src="{url}" style="display:none;"></iframe>
+# Fonction pour générer une iframe cachée pour l'URL d'ajout au panier
+def generate_hidden_iframe(url):
+    iframe_code = f"""
+    <iframe src="{url}"></iframe>
     """
-    st.markdown(html_code, unsafe_allow_html=True)
+    st.markdown(iframe_code, unsafe_allow_html=True)
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
@@ -168,9 +168,8 @@ if uploaded_image is not None:
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={urllib.parse.quote(cloudinary_url)}"
             )
 
-            if st.button("Ajouter au panier"):
-                add_to_cart_via_iframe(shopify_cart_url)
-                st.success("Produit ajouté au panier avec succès !")
+            st.markdown(f"**Ajout au panier :** [Cliquez ici pour ajouter au panier](javascript:void(0))", unsafe_allow_html=True)
+            generate_hidden_iframe(shopify_cart_url)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
