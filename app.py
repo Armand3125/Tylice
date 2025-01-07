@@ -171,15 +171,21 @@ if uploaded_image is not None:
                     f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
                 )
                 response = requests.post(shopify_cart_url, headers={"Content-Type": "application/json"})
-                if response.status_code == 200:
+                try:
                     data = response.json()
-                    st.success("Produit ajouté au panier avec succès!")
-                    for item in data['items']:
-                        st.image(item['image'], width=100)
-                        st.write(f"Produit : {item['title']}")
-                        st.write(f"Quantité : {item['quantity']}")
-                else:
-                    st.error("Erreur lors de l'ajout au panier.")
+                    if 'items' in data:
+                        st.success("Produit ajouté au panier avec succès!")
+                        for item in data['items']:
+                            st.image(item['image'], width=100)
+                            st.write(f"Produit : {item['title']}")
+                            st.write(f"Quantité : {item['quantity']}")
+                    else:
+                        st.error("Aucun produit n'a été ajouté au panier. Réponse inattendue.")
+                        st.write(data)
+                except Exception as e:
+                    st.error("Erreur lors du traitement de la réponse.")
+                    st.write(f"Exception: {e}")
+                    st.write(response.text)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
