@@ -165,31 +165,20 @@ if uploaded_image is not None:
                 st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
             else:
                 variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                # Encodage de l'URL pour Shopify
                 encoded_url = urllib.parse.quote(cloudinary_url)
                 shopify_cart_url = (
                     f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
                 )
-                response = requests.post(shopify_cart_url, headers={"Content-Type": "application/json"})
-                try:
-                    data = response.json()
-                    if 'key' in data:  # Vérifie si un article a été ajouté
-                        st.success("Produit ajouté au panier avec succès!")
-                        # Affichez les détails de l'article ajouté
-                        st.write(f"**Produit :** {data['title']}")
-                        st.write(f"**Quantité :** {data['quantity']}")
-                        st.write(f"**Prix total :** {data['line_price'] / 100:.2f} €")
-                        if data['properties'].get('Image'):
-                            st.image(data['properties']['Image'], width=100)
-                        else:
-                            st.write("Aucune image associée.")
-                    else:
-                        st.error("Aucun produit n'a été ajouté au panier. Réponse inattendue.")
-                        st.write(data)  # Affiche la réponse pour le diagnostic
-                except Exception as e:
-                    st.error("Erreur lors du traitement de la réponse.")
-                    st.write(f"Exception: {e}")
-                    st.write(response.text)
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+                response = requests.post(shopify_cart_url, headers=headers)
+                if response.status_code == 200:
+                    st.success("Produit ajouté au panier avec succès!")
+                else:
+                    st.error("Échec de l'ajout au panier.")
+                    st.write(response.json())
 
 # Affichage des conseils d'utilisation
 st.markdown("""
