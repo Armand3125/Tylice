@@ -6,6 +6,7 @@ import io
 from datetime import datetime
 import requests
 import urllib.parse
+import json
 
 # Dictionnaire des couleurs
 pal = {
@@ -75,29 +76,12 @@ def upload_to_cloudinary(image_buffer):
         st.error(f"Erreur Cloudinary : {e}")
         return None
 
-# Fonction pour ajouter un produit au panier Shopify
-def add_to_shopify_cart(variant_id, image_url):
-    cart_url = "https://tylice2.myshopify.com/cart/add.js"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = {
-        "items": [
-            {
-                "id": variant_id,
-                "quantity": 1,
-                "properties": {"Image": image_url}
-            }
-        ]
-    }
-    try:
-        response = requests.post(cart_url, json=data, headers=headers)
-        if response.status_code == 200:
-            return True, response.json()
-        else:
-            return False, response.json()
-    except Exception as e:
-        return False, {"error": str(e)}
+# Fonction pour ajouter un produit au panier Shopify en utilisant une iframe cachée
+def add_to_cart_via_iframe(url):
+    html_code = f"""
+    <iframe src="{url}" style="display:none;"></iframe>
+    """
+    st.markdown(html_code, unsafe_allow_html=True)
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
@@ -180,13 +164,13 @@ if uploaded_image is not None:
             st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
         else:
             variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            shopify_cart_url = (
+                f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={urllib.parse.quote(cloudinary_url)}"
+            )
+
             if st.button("Ajouter au panier"):
-                success, response = add_to_shopify_cart(variant_id, cloudinary_url)
-                if success:
-                    st.success("Produit ajouté au panier avec succès !")
-                else:
-                    st.error("Erreur lors de l'ajout au panier.")
-                    st.write(response)
+                add_to_cart_via_iframe(shopify_cart_url)
+                st.success("Produit ajouté au panier avec succès !")
 
 # Affichage des conseils d'utilisation
 st.markdown("""
