@@ -7,30 +7,48 @@ import base64
 import requests
 
 # Shopify API Keys
-ADMIN_API_KEY = "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"
 STOREFRONT_ACCESS_TOKEN = "cc89c5d179a1bbd47e34fda34a26b27a"
 
 # Shopify API URLs
 STORE_URL = "https://tylice2.myshopify.com"
-ADMIN_API_URL = f"{STORE_URL}/admin/api/2023-04"
 STOREFRONT_API_URL = f"{STORE_URL}/api/2023-04/graphql.json"
 
-# Fonction Shopify Storefront API
-def add_to_cart_with_storefront(variant_id, image_base64):
+# Fonction Shopify Storefront API pour créer un panier
+def create_cart():
     headers = {
         "Content-Type": "application/json",
         "X-Shopify-Storefront-Access-Token": STOREFRONT_ACCESS_TOKEN
     }
     query = """
-    mutation ($variantId: ID!, $quantity: Int!, $properties: [AttributeInput!]!) {
-        cartLinesAdd(
-            cartId: null,
-            lines: [{
-                merchandiseId: $variantId,
-                quantity: $quantity,
-                attributes: $properties
-            }]
-        ) {
+    mutation {
+        cartCreate {
+            cart {
+                id
+            }
+            userErrors {
+                field
+                message
+            }
+        }
+    }
+    """
+    response = requests.post(STOREFRONT_API_URL, headers=headers, json={"query": query})
+    response_data = response.json()
+    if "errors" in response_data:
+        st.error(f"Erreur lors de la création du panier : {response_data['errors']}")
+        return None
+    cart_id = response_data.get("data", {}).get("cartCreate", {}).get("cart", {}).get("id")
+    return cart_id
+
+# Fonction Shopify Storefront API pour ajouter au panier
+def add_to_cart_with_storefront(cart_id, variant_id, image_base64):
+    headers = {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": STOREFRONT_ACCESS_TOKEN
+    }
+    query = """
+    mutation ($cartId: ID!, $lines: [CartLineInput!]!) {
+        cartLinesAdd(cartId: $cartId, lines: $lines) {
             cart {
                 id
                 lines(first: 10) {
@@ -55,9 +73,14 @@ def add_to_cart_with_storefront(variant_id, image_base64):
     }
     """
     variables = {
-        "variantId": f"gid://shopify/ProductVariant/{variant_id}",
-        "quantity": 1,
-        "properties": [{"key": "Image", "value": image_base64}]
+        "cartId": cart_id,
+        "lines": [
+            {
+                "merchandiseId": f"gid://shopify/ProductVariant/{variant_id}",
+                "quantity": 1,
+                "attributes": [{"key": "Image", "value": image_base64}]
+            }
+        ]
     }
     response = requests.post(STOREFRONT_API_URL, headers=headers, json={"query": query, "variables": variables})
     return response.json()
@@ -121,10 +144,16 @@ if uploaded_image is not None:
 
     # Ajouter au panier Shopify
     if st.button("Ajouter au panier"):
-        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-        result = add_to_cart_with_storefront(variant_id, image_base64)
-        if "errors" in result:
-            st.error(f"Erreur : {result['errors']}")
+        # Créer un panier et récupérer son ID
+        cart_id = create_cart()
+        if not cart_id:
+            st.error("Impossible de créer un panier.")
         else:
-            st.success("Produit ajouté avec succès au panier !")
-            st.json(result)
+            # Ajouter l'image personnalisée au panier
+            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            result = add_to_cart_with_storefront(cart_id, variant_id, image_base64)
+            if "errors" in result:
+                st.error(f"Erreur : {result['errors']}")
+            else:
+                st.success("Produit ajouté avec succès au panier !")
+                st.json(result)
