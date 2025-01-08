@@ -11,12 +11,9 @@ import urllib.parse
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
-    "VL": (174, 150, 212), "VG": (63, 142, 67),
-    "RE": (222, 67, 67), "BM": (0, 120, 191),
-    "OM": (249, 153, 99), "VGa": (59, 102, 94),
-    "BG": (163, 216, 225), "VM": (236, 0, 140),
-    "GA": (166, 169, 170), "VB": (94, 67, 183),
-    "BF": (4, 47, 86),
+    "VL": (174, 150, 212), "VG": (63, 142, 67), "RE": (222, 67, 67), "BM": (0, 120, 191),
+    "OM": (249, 153, 99), "VGa": (59, 102, 94), "BG": (163, 216, 225), "VM": (236, 0, 140),
+    "GA": (166, 169, 170), "VB": (94, 67, 183), "BF": (4, 47, 86),
 }
 
 st.title("Tylice")
@@ -75,7 +72,7 @@ def upload_to_cloudinary(image_buffer):
         st.error(f"Erreur Cloudinary : {e}")
         return None
 
-# Traitement de l'image téléchargée
+# Traitement principal de l'image
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
@@ -151,30 +148,31 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+        cloudinary_url = upload_to_cloudinary(img_buffer)
+        if cloudinary_url:
+            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            encoded_url = urllib.parse.quote(cloudinary_url)
+            shopify_cart_url = (
+                f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+            )
+            shopify_view_cart_url = "https://tylice2.myshopify.com/cart"
 
-        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+            # Ajout au panier avec ouverture des deux fenêtres
+            js_code = f"""
+                <script>
+                    function openCartAndAdd() {{
+                        var addCartWindow = window.open("{shopify_cart_url}", "_blank", "width=500,height=500");
+                        setTimeout(() => {{
+                            if (addCartWindow) addCartWindow.close();
+                            var viewCartWindow = window.open("{shopify_view_cart_url}", "_blank", "width=800,height=600");
+                        }}, 1500);
+                    }}
+                </script>
+                <button onclick="openCartAndAdd()">Ajouter au panier</button>
+            """
+            st.markdown(js_code, unsafe_allow_html=True)
 
-        # Ajout au panier avec la nouvelle propriété personnalisée
-        if st.button("Ajouter au panier"):
-            cloudinary_url = upload_to_cloudinary(img_buffer)
-            if not cloudinary_url:
-                st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
-            else:
-                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                # Encodage de l'URL pour Shopify
-                encoded_url = urllib.parse.quote(cloudinary_url)
-                # Utilisation de la bonne URL pour ajouter au panier
-                shopify_cart_url = (
-                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
-                )
-                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
-                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
-
-# Affichage des conseils d'utilisation
+# Affichage des conseils
 st.markdown("""
     ### 📝 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
