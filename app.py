@@ -9,14 +9,10 @@ import urllib.parse
 
 # Dictionnaire des couleurs
 pal = {
-    "NC": (0, 0, 0), "BJ": (255, 255, 255),
-    "JO": (228, 189, 104), "BC": (0, 134, 214),
-    "VL": (174, 150, 212), "VG": (63, 142, 67),
-    "RE": (222, 67, 67), "BM": (0, 120, 191),
-    "OM": (249, 153, 99), "VGa": (59, 102, 94),
-    "BG": (163, 216, 225), "VM": (236, 0, 140),
-    "GA": (166, 169, 170), "VB": (94, 67, 183),
-    "BF": (4, 47, 86),
+    "NC": (0, 0, 0), "BJ": (255, 255, 255), "JO": (228, 189, 104), "BC": (0, 134, 214),
+    "VL": (174, 150, 212), "VG": (63, 142, 67), "RE": (222, 67, 67), "BM": (0, 120, 191),
+    "OM": (249, 153, 99), "VGa": (59, 102, 94), "BG": (163, 216, 225), "VM": (236, 0, 140),
+    "GA": (166, 169, 170), "VB": (94, 67, 183), "BF": (4, 47, 86),
 }
 
 st.title("Tylice")
@@ -73,6 +69,29 @@ def upload_to_cloudinary(image_buffer):
             return None
     except Exception as e:
         st.error(f"Erreur Cloudinary : {e}")
+        return None
+
+# Fonction pour gérer les requêtes Shopify avec cookies et headers
+def shopify_request_with_cookies(session, method, url, headers=None, data=None):
+    try:
+        if method == "GET":
+            response = session.get(url, headers=headers)
+        elif method == "POST":
+            response = session.post(url, headers=headers, json=data)
+        else:
+            st.error("Méthode HTTP non supportée.")
+            return None
+
+        # Afficher les logs
+        st.write("Request URL:", url)
+        st.write("Response Status Code:", response.status_code)
+        st.write("Response Headers:", response.headers)
+        st.write("Response Cookies:", response.cookies.get_dict())
+        st.write("Response Body:", response.json() if response.headers.get("Content-Type") == "application/json" else response.text)
+
+        return response
+    except Exception as e:
+        st.error(f"Erreur lors de la requête : {e}")
         return None
 
 # Traitement de l'image téléchargée
@@ -151,35 +170,28 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+        cloudinary_url = upload_to_cloudinary(img_buffer)
+        if not cloudinary_url:
+            st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
+        else:
+            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            shopify_cart_url = (
+                f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={urllib.parse.quote(cloudinary_url)}"
+            )
 
-        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+            # Utiliser une session pour capturer les cookies
+            session = requests.Session()
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
 
-        # Ajout au panier avec la nouvelle propriété personnalisée
-        if st.button("Ajouter au panier"):
-            cloudinary_url = upload_to_cloudinary(img_buffer)
-            if not cloudinary_url:
-                st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
-            else:
-                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                # Encodage de l'URL pour Shopify
-                encoded_url = urllib.parse.quote(cloudinary_url)
-                shopify_cart_url = (
-                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
-                )
-                response = requests.post(shopify_cart_url, headers={"Content-Type": "application/json"})
-                if response.status_code == 200:
-                    data = response.json()
-                    st.success("Produit ajouté au panier avec succès!")
-                    for item in data['items']:
-                        st.image(item['image'], width=100)
-                        st.write(f"Produit : {item['title']}")
-                        st.write(f"Quantité : {item['quantity']}")
-                else:
-                    st.error("Erreur lors de l'ajout au panier.")
+            if st.button("Ajouter au panier"):
+                shopify_request_with_cookies(session, "GET", shopify_cart_url, headers=headers)
+
+            if st.button("Vérifier le panier"):
+                shopify_request_with_cookies(session, "GET", "https://tylice2.myshopify.com/cart.js", headers=headers)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
