@@ -3,7 +3,6 @@ from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 import io
-import base64
 from datetime import datetime
 import urllib.parse
 
@@ -136,28 +135,16 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        base64_image = base64.b64encode(img_buffer.getvalue()).decode()
-        encoded_image = urllib.parse.quote(base64_image)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
         col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
         with col2:
             st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
 
-        # Ajout au panier avec l'image encodée en base64
-        if st.button("Ajouter au panier"):
-            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-            shopify_cart_url = (
-                f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D=data:image/png;base64,{encoded_image}"
-            )
-            st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
-
-# Affichage des conseils d'utilisation
-st.markdown("""
-    ### 📝 Conseils d'utilisation :
-    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-    - Préférez des images avec un bon contraste et des éléments bien définis.
-    - Une **image carrée** donnera un meilleur résultat.
-    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-""", unsafe_allow_html=True)
+        # Lien direct d'ajout au panier
+        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+        shopify_cart_url = (
+            f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1"
+        )
+        st.markdown(f"### Lien direct pour ajouter au panier : [Ajouter au panier]({shopify_cart_url})", unsafe_allow_html=True)
