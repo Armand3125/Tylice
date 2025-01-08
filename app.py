@@ -9,8 +9,7 @@ import urllib.parse
 
 # Dictionnaire des couleurs
 pal = {
-    "NC": (0, 0, 0), "BJ": (255, 255, 255),
-    "JO": (228, 189, 104), "BC": (0, 134, 214),
+    "NC": (0, 0, 0), "BJ": (255, 255, 255), "JO": (228, 189, 104), "BC": (0, 134, 214),
     "VL": (174, 150, 212), "VG": (63, 142, 67), "RE": (222, 67, 67), "BM": (0, 120, 191),
     "OM": (249, 153, 99), "VGa": (59, 102, 94), "BG": (163, 216, 225), "VM": (236, 0, 140),
     "GA": (166, 169, 170), "VB": (94, 67, 183), "BF": (4, 47, 86),
@@ -51,38 +50,12 @@ def upload_to_cloudinary(image_buffer):
         st.error(f"Erreur Cloudinary : {e}")
         return None
 
-# Fonction pour gérer les requêtes Shopify avec cookies et headers
-def shopify_request_with_cookies(session, method, url, headers=None, data=None):
-    try:
-        if method == "GET":
-            response = session.get(url, headers=headers)
-        elif method == "POST":
-            response = session.post(url, headers=headers, json=data)
-        else:
-            st.error("Méthode HTTP non supportée.")
-            return None
-
-        # Afficher les logs
-        st.write("Request URL:", url)
-        st.write("Response Status Code:", response.status_code)
-        st.write("Response Headers:", response.headers)
-        st.write("Response Cookies:", response.cookies.get_dict())
-        st.write("Response Body:", response.json() if response.headers.get("Content-Type") == "application/json" else response.text)
-
-        return response
-    except Exception as e:
-        st.error(f"Erreur lors de la requête : {e}")
-        return None
-
-# Fonction pour vérifier le contenu du panier Shopify
-def check_cart_content(session):
-    try:
-        cart_url = "https://tylice2.myshopify.com/cart.js"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = session.get(cart_url, headers=headers)
-        st.write("Cart Content:", response.json())
-    except Exception as e:
-        st.error(f"Erreur lors de la récupération du panier : {e}")
+# Fonction pour gérer l'ajout au panier via une iframe cachée
+def add_to_cart_via_iframe(cart_url):
+    st.markdown(f"""
+        <iframe src="{cart_url}" style="display: none;"></iframe>
+        <p>Produit ajouté au panier ! <a href="https://tylice2.myshopify.com/cart" target="_blank">Voir le panier</a></p>
+    """, unsafe_allow_html=True)
 
 # Traitement principal de l'image et ajout au panier
 if uploaded_image is not None:
@@ -100,21 +73,8 @@ if uploaded_image is not None:
             f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
         )
 
-        # Utiliser une session pour gérer les cookies
-        session = requests.Session()
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
-
         if st.button("Ajouter au panier"):
-            response = shopify_request_with_cookies(session, "GET", shopify_cart_url, headers=headers)
-            if response and response.status_code == 200:
-                st.success("Produit ajouté au panier avec succès !")
-
-        if st.button("Vérifier le panier"):
-            check_cart_content(session)
+            add_to_cart_via_iframe(shopify_cart_url)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
