@@ -6,83 +6,28 @@ import io
 import base64
 import requests
 
-# Shopify API Keys
-STOREFRONT_ACCESS_TOKEN = "cc89c5d179a1bbd47e34fda34a26b27a"
-
-# Shopify API URLs
+# Shopify Store URL
 STORE_URL = "https://tylice2.myshopify.com"
-STOREFRONT_API_URL = f"{STORE_URL}/api/2023-04/graphql.json"
 
-# Fonction Shopify Storefront API pour créer un panier
-def create_cart():
-    headers = {
-        "Content-Type": "application/json",
-        "X-Shopify-Storefront-Access-Token": STOREFRONT_ACCESS_TOKEN
-    }
-    query = """
-    mutation {
-        cartCreate {
-            cart {
-                id
-            }
-            userErrors {
-                field
-                message
-            }
-        }
-    }
-    """
-    response = requests.post(STOREFRONT_API_URL, headers=headers, json={"query": query})
-    response_data = response.json()
-    if "errors" in response_data:
-        st.error(f"Erreur lors de la création du panier : {response_data['errors']}")
-        return None
-    cart_id = response_data.get("data", {}).get("cartCreate", {}).get("cart", {}).get("id")
-    return cart_id
-
-# Fonction Shopify Storefront API pour ajouter au panier
-def add_to_cart_with_storefront(cart_id, variant_id, image_base64):
-    headers = {
-        "Content-Type": "application/json",
-        "X-Shopify-Storefront-Access-Token": STOREFRONT_ACCESS_TOKEN
-    }
-    query = """
-    mutation ($cartId: ID!, $lines: [CartLineInput!]!) {
-        cartLinesAdd(cartId: $cartId, lines: $lines) {
-            cart {
-                id
-                lines(first: 10) {
-                    edges {
-                        node {
-                            id
-                            merchandise {
-                                ... on ProductVariant {
-                                    id
-                                    title
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            userErrors {
-                field
-                message
-            }
-        }
-    }
-    """
-    variables = {
-        "cartId": cart_id,
-        "lines": [
+# Fonction pour ajouter au panier principal Shopify via `/cart/add.js`
+def add_to_cart_shopify(variant_id, image_url):
+    # URL pour ajouter au panier principal Shopify
+    cart_add_url = f"{STORE_URL}/cart/add.js"
+    payload = {
+        "items": [
             {
-                "merchandiseId": f"gid://shopify/ProductVariant/{variant_id}",
-                "quantity": 1,
-                "attributes": [{"key": "Image", "value": image_base64}]
+                "id": variant_id,  # ID de la variante du produit
+                "quantity": 1,  # Quantité à ajouter
+                "properties": {
+                    "Image": image_url  # Propriété personnalisée pour l'image
+                }
             }
         ]
     }
-    response = requests.post(STOREFRONT_API_URL, headers=headers, json={"query": query, "variables": variables})
+    headers = {
+        "Content-Type": "application/json",
+    }
+    response = requests.post(cart_add_url, headers=headers, json=payload)
     return response.json()
 
 # Dictionnaire des couleurs
@@ -144,16 +89,10 @@ if uploaded_image is not None:
 
     # Ajouter au panier Shopify
     if st.button("Ajouter au panier"):
-        # Créer un panier et récupérer son ID
-        cart_id = create_cart()
-        if not cart_id:
-            st.error("Impossible de créer un panier.")
+        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+        result = add_to_cart_shopify(variant_id, image_base64)
+        if "errors" in result:
+            st.error(f"Erreur lors de l'ajout au panier : {result['errors']}")
         else:
-            # Ajouter l'image personnalisée au panier
-            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-            result = add_to_cart_with_storefront(cart_id, variant_id, image_base64)
-            if "errors" in result:
-                st.error(f"Erreur : {result['errors']}")
-            else:
-                st.success("Produit ajouté avec succès au panier !")
-                st.json(result)
+            st.success("Produit ajouté avec succès au panier Shopify principal !")
+            st.json(result)
