@@ -12,11 +12,9 @@ pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255),
     "JO": (228, 189, 104), "BC": (0, 134, 214),
     "VL": (174, 150, 212), "VG": (63, 142, 67),
-    "RE": (222, 67, 67), "BM": (0, 120, 191),
-    "OM": (249, 153, 99), "VGa": (59, 102, 94),
-    "BG": (163, 216, 225), "VM": (236, 0, 140),
-    "GA": (166, 169, 170), "VB": (94, 67, 183),
-    "BF": (4, 47, 86),
+    "RE": (222, 67, 67), "BM": (0, 120, 191), "OM": (249, 153, 99),
+    "VGa": (59, 102, 94), "BG": (163, 216, 225), "VM": (236, 0, 140),
+    "GA": (166, 169, 170), "VB": (94, 67, 183), "BF": (4, 47, 86),
 }
 
 st.title("Tylice")
@@ -32,7 +30,7 @@ css = """
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
-        iframe { display: none; }
+        iframe.hidden-iframe { display: none; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
@@ -79,7 +77,7 @@ def upload_to_cloudinary(image_buffer):
 # Fonction pour générer une iframe cachée pour l'URL d'ajout au panier
 def generate_hidden_iframe(url):
     iframe_code = f"""
-    <iframe src="{url}"></iframe>
+    <iframe src="{url}" class="hidden-iframe"></iframe>
     """
     st.markdown(iframe_code, unsafe_allow_html=True)
 
@@ -168,8 +166,8 @@ if uploaded_image is not None:
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={urllib.parse.quote(cloudinary_url)}"
             )
 
-            st.markdown(f"**Ajout au panier :** [Cliquez ici pour ajouter au panier](javascript:void(0))", unsafe_allow_html=True)
             generate_hidden_iframe(shopify_cart_url)
+            st.success("Produit ajouté au panier avec succès !")
 
 # Affichage des conseils d'utilisation
 st.markdown("""
