@@ -6,7 +6,6 @@ import io
 from datetime import datetime
 import requests
 import urllib.parse
-import webbrowser
 
 # Dictionnaire des couleurs
 pal = {
@@ -168,13 +167,12 @@ if uploaded_image is not None:
                 variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
                 # Encodage de l'URL pour Shopify
                 encoded_url = urllib.parse.quote(cloudinary_url)
-                shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
-                
-                # Affichage du lien pour ouvrir et fermer la fenêtre
-                if st.button("Confirmer l'ajout au panier"):
-                    webbrowser.open(shopify_cart_url)
-
-                st.markdown(f"[Ajout au panier ici]({shopify_cart_url})", unsafe_allow_html=True)
+                # Utilisation de la bonne URL pour ajouter au panier
+                shopify_cart_url = (
+                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+                )
+                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
