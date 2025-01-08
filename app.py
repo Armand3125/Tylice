@@ -3,8 +3,8 @@ from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 import io
+import base64
 from datetime import datetime
-import requests
 import urllib.parse
 
 # Dictionnaire des couleurs
@@ -59,21 +59,6 @@ num_selections = st.session_state.num_selections
 rectangle_width = 80 if num_selections == 4 else 50
 rectangle_height = 20
 cols = st.columns(num_selections * 2)
-
-# Fonction pour télécharger l'image sur Cloudinary
-def upload_to_cloudinary(image_buffer):
-    url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
-    files = {"file": image_buffer}
-    data = {"upload_preset": "image_upload_tylice"}
-    try:
-        response = requests.post(url, files=files, data=data)
-        if response.status_code == 200:
-            return response.json()["secure_url"]
-        else:
-            return None
-    except Exception as e:
-        st.error(f"Erreur Cloudinary : {e}")
-        return None
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
@@ -151,28 +136,20 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
+        base64_image = base64.b64encode(img_buffer.getvalue()).decode()
+        encoded_image = urllib.parse.quote(base64_image)
 
         col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
         with col2:
             st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
 
-        # Ajout au panier avec la nouvelle propriété personnalisée
+        # Ajout au panier avec l'image encodée en base64
         if st.button("Ajouter au panier"):
-            cloudinary_url = upload_to_cloudinary(img_buffer)
-            if not cloudinary_url:
-                st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
-            else:
-                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                # Encodage de l'URL pour Shopify
-                encoded_url = urllib.parse.quote(cloudinary_url)
-                # Utilisation de la bonne URL pour ajouter au panier
-                shopify_cart_url = (
-                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
-                )
-                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
-                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
+            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            shopify_cart_url = (
+                f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D=data:image/png;base64,{encoded_image}"
+            )
+            st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
