@@ -73,6 +73,21 @@ def add_to_cart(variant_id, image_url):
         st.error("Erreur lors de l'ajout au panier Shopify")
         st.write(response.json())
 
+# Fonction pour consulter l'état du panier
+def get_cart_state():
+    url = f"{SHOPIFY_STORE_URL}/cart.js"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Shopify-Access-Token": SHOPIFY_API_ADMIN_TOKEN
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        st.success("État du panier récupéré avec succès !")
+        st.write(response.json())
+    else:
+        st.error("Erreur lors de la récupération de l'état du panier.")
+        st.write(response.json())
+
 # Traitement de l'image téléchargée
 if uploaded_image:
     image = Image.open(uploaded_image).convert("RGB")
@@ -114,3 +129,7 @@ if uploaded_image:
         variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
         if st.button("Ajouter au panier"):
             add_to_cart(variant_id, cloudinary_url)
+
+# Bouton pour consulter l'état du panier
+if st.button("Consulter l'état du panier"):
+    get_cart_state()
