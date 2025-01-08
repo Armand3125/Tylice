@@ -75,42 +75,6 @@ def upload_to_cloudinary(image_buffer):
         st.error(f"Erreur Cloudinary : {e}")
         return None
 
-# Fonction pour gérer l'ajout au panier
-SHOPIFY_CART_ADD_URL = "https://tylice2.myshopify.com/cart/add.js"
-SHOPIFY_CART_GET_URL = "https://tylice2.myshopify.com/cart.js"
-session = requests.Session()  # Session pour gérer les cookies
-
-
-def add_to_cart_with_cookies(variant_id, image_url):
-    payload = {
-        "items": [
-            {
-                "id": variant_id,
-                "quantity": 1,
-                "properties": {
-                    "Image": image_url
-                }
-            }
-        ]
-    }
-    try:
-        response = session.post(SHOPIFY_CART_ADD_URL, json=payload)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        st.error(f"Erreur lors de l'ajout au panier : {e}")
-        return None
-
-
-def get_cart_state():
-    try:
-        response = session.get(SHOPIFY_CART_GET_URL)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        st.error(f"Erreur lors de la récupération de l'état du panier : {e}")
-        return None
-
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
@@ -187,20 +151,28 @@ if uploaded_image is not None:
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
 
-        cloudinary_url = upload_to_cloudinary(img_buffer)
-        if not cloudinary_url:
-            st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
-        else:
-            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-            if st.button("Ajouter au panier"):
-                result = add_to_cart_with_cookies(variant_id, cloudinary_url)
-                if result:
-                    st.success("Produit ajouté avec succès au panier Shopify principal !")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
-            if st.button("Consulter l'état du panier"):
-                cart_state = get_cart_state()
-                if cart_state:
-                    st.json(cart_state)
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
+        with col2:
+            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
+
+        # Ajout au panier avec la nouvelle propriété personnalisée
+        if st.button("Ajouter au panier"):
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            if not cloudinary_url:
+                st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
+            else:
+                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+                # Encodage de l'URL pour Shopify
+                encoded_url = urllib.parse.quote(cloudinary_url)
+                # Utilisation de la bonne URL pour ajouter au panier
+                shopify_cart_url = (
+                    f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+                )
+                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
