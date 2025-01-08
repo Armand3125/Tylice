@@ -5,9 +5,41 @@ from sklearn.cluster import KMeans
 import io
 import base64
 import requests
+import urllib.parse
+from datetime import datetime
 
 STORE_URL = "https://tylice2.myshopify.com"
 
+# Dictionnaire des couleurs
+pal = {
+    "NC": (0, 0, 0), "BJ": (255, 255, 255),
+    "JO": (228, 189, 104), "BC": (0, 134, 214),
+    "VL": (174, 150, 212), "VG": (63, 142, 67),
+    "RE": (222, 67, 67), "BM": (0, 120, 191),
+    "OM": (249, 153, 99), "VGa": (59, 102, 94),
+    "BG": (163, 216, 225), "VM": (236, 0, 140),
+    "GA": (166, 169, 170), "VB": (94, 67, 183),
+    "BF": (4, 47, 86),
+}
+
+st.title("Tylice - Création d'images personnalisées")
+
+# Fonction pour télécharger une image vers Cloudinary
+def upload_to_cloudinary(image_buffer):
+    url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
+    files = {"file": image_buffer}
+    data = {"upload_preset": "image_upload_tylice"}
+    try:
+        response = requests.post(url, files=files, data=data)
+        if response.status_code == 200:
+            return response.json()["secure_url"]
+        else:
+            return None
+    except Exception as e:
+        st.error(f"Erreur Cloudinary : {e}")
+        return None
+
+# Fonction pour ajouter un produit au panier Shopify
 def add_to_cart_shopify(variant_id, image_url):
     cart_add_url = f"{STORE_URL}/cart/add.js"
     payload = {
@@ -27,9 +59,8 @@ def add_to_cart_shopify(variant_id, image_url):
     response = requests.post(cart_add_url, headers=headers, json=payload)
     return response.json()
 
-st.title("Tylice - Création d'images personnalisées")
-
-uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
+# Téléchargement de l'image
+uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
@@ -56,12 +87,24 @@ if uploaded_image is not None:
     img_buffer.seek(0)
 
     image_base64 = f"data:image/png;base64,{base64.b64encode(img_buffer.getvalue()).decode('utf-8')}"
+    cloudinary_url = upload_to_cloudinary(img_buffer)
 
-    if st.button("Ajouter au panier"):
+    if not cloudinary_url:
+        st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
+    else:
         variant_id = "50063717106003" if st.session_state.num_selections == 4 else "50063717138771"
-        result = add_to_cart_shopify(variant_id, image_base64)
-        if "errors" in result:
-            st.error(f"Erreur lors de l'ajout au panier : {result['errors']}")
-        else:
-            st.success("Produit ajouté avec succès au panier Shopify principal !")
-            st.json(result)
+
+        if st.button("Ajouter au panier"):
+            result = add_to_cart_shopify(variant_id, cloudinary_url)
+            if "items" in result:
+                st.success("Produit ajouté avec succès au panier Shopify !")
+                st.json(result)
+            else:
+                st.error(f"Erreur lors de l'ajout au panier : {result}")
+
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Téléchargez une image pour créer un produit personnalisé.
+    - Les couleurs sont automatiquement sélectionnées à partir de votre image.
+    - Ajoutez facilement votre produit personnalisé au panier Shopify.
+""", unsafe_allow_html=True)
