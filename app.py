@@ -30,7 +30,6 @@ css = """
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
-        iframe.hidden-iframe { display: none; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
@@ -76,12 +75,21 @@ def upload_to_cloudinary(image_buffer):
         st.error(f"Erreur Cloudinary : {e}")
         return None
 
-# Fonction pour générer une iframe cachée pour l'URL d'ajout au panier
-def generate_hidden_iframe(url):
-    iframe_code = f"""
-    <iframe src="{url}" class="hidden-iframe"></iframe>
-    """
-    st.markdown(iframe_code, unsafe_allow_html=True)
+# Fonction pour ajouter un produit au panier Shopify et afficher la réponse
+def add_to_shopify_cart(url):
+    try:
+        response = requests.get(url)
+        st.write("Shopify Response Status Code:", response.status_code)
+        st.write("Shopify Response Body:", response.json())
+        if response.status_code == 200:
+            st.success("Produit ajouté au panier avec succès !")
+            return response.json()
+        else:
+            st.error("Erreur lors de l'ajout au panier.")
+            return None
+    except Exception as e:
+        st.error(f"Erreur lors de l'ajout au panier : {e}")
+        return None
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
@@ -168,8 +176,10 @@ if uploaded_image is not None:
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={urllib.parse.quote(cloudinary_url)}"
             )
 
-            st.markdown(f"**Cliquez pour ajouter au panier :** [Ajouter au panier]({shopify_cart_url})", unsafe_allow_html=True)
-            st.write("URL générée pour Shopify:", shopify_cart_url)
+            if st.button("Ajouter au panier"):
+                add_to_shopify_cart(shopify_cart_url)
+
+            st.markdown(f"[Voir mon panier](https://tylice2.myshopify.com/cart)", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
