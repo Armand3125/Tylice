@@ -9,10 +9,14 @@ import urllib.parse
 
 # Dictionnaire des couleurs
 pal = {
-    "NC": (0, 0, 0), "BJ": (255, 255, 255), "JO": (228, 189, 104), "BC": (0, 134, 214),
-    "VL": (174, 150, 212), "VG": (63, 142, 67), "RE": (222, 67, 67), "BM": (0, 120, 191),
-    "OM": (249, 153, 99), "VGa": (59, 102, 94), "BG": (163, 216, 225), "VM": (236, 0, 140),
-    "GA": (166, 169, 170), "VB": (94, 67, 183), "BF": (4, 47, 86),
+    "NC": (0, 0, 0), "BJ": (255, 255, 255),
+    "JO": (228, 189, 104), "BC": (0, 134, 214),
+    "VL": (174, 150, 212), "VG": (63, 142, 67),
+    "RE": (222, 67, 67), "BM": (0, 120, 191),
+    "OM": (249, 153, 99), "VGa": (59, 102, 94),
+    "BG": (163, 216, 225), "VM": (236, 0, 140),
+    "GA": (166, 169, 170), "VB": (94, 67, 183),
+    "BF": (4, 47, 86),
 }
 
 st.title("Tylice")
@@ -50,14 +54,7 @@ def upload_to_cloudinary(image_buffer):
         st.error(f"Erreur Cloudinary : {e}")
         return None
 
-# Fonction pour gérer l'ajout au panier via une iframe cachée
-def add_to_cart_via_iframe(cart_url):
-    st.markdown(f"""
-        <iframe src="{cart_url}" style="display: none;"></iframe>
-        <p>Produit ajouté au panier ! <a href="https://tylice2.myshopify.com/cart" target="_blank">Voir le panier</a></p>
-    """, unsafe_allow_html=True)
-
-# Traitement principal de l'image et ajout au panier
+# Traitement principal
 if uploaded_image is not None:
     image = Image.open(uploaded_image).convert("RGB")
     resized_image = image.resize((350, 350))
@@ -73,10 +70,19 @@ if uploaded_image is not None:
             f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
         )
 
-        if st.button("Ajouter au panier"):
-            add_to_cart_via_iframe(shopify_cart_url)
+        # Génération de l'URL avec script pour fermer automatiquement la fenêtre
+        js_code = f"""
+            <script>
+                function addToCart() {{
+                    var win = window.open("{shopify_cart_url}", "_blank");
+                    setTimeout(() => win.close(), 1000);  // Fermer la fenêtre après 1 seconde
+                }}
+            </script>
+            <button onclick="addToCart()">Ajouter au panier</button>
+        """
+        st.markdown(js_code, unsafe_allow_html=True)
 
-# Affichage des conseils d'utilisation
+# Affichage des conseils
 st.markdown("""
     ### 📝 Conseils d'utilisation :
     - Les couleurs les plus compatibles avec l'image apparaissent en premier.
