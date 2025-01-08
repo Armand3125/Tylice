@@ -3,6 +3,7 @@ from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 import io
+import base64
 import requests
 
 # Shopify API Keys
@@ -43,8 +44,9 @@ num_selections = st.session_state.num_selections
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
+    # Chargement de l'image
     image = Image.open(uploaded_image).convert("RGB")
-    resized_image = image.resize((350, 350))  # Redimensionnement fixe
+    resized_image = image.resize((350, 350))  # Redimensionnement fixe pour traitement
     img_arr = np.array(resized_image)
 
     # Clustering KMeans pour détecter les couleurs dominantes
@@ -53,9 +55,8 @@ if uploaded_image is not None:
     labels = kmeans.labels_
     centers = kmeans.cluster_centers_
 
+    # Création de l'image avec les couleurs sélectionnées
     selected_colors = [tuple(map(int, center)) for center in centers]
-
-    # Créer une nouvelle image avec les couleurs sélectionnées
     new_img_arr = np.array([selected_colors[label] for label in labels])
     new_img_arr = new_img_arr.reshape(img_arr.shape)
     new_image = Image.fromarray(new_img_arr.astype('uint8'))
@@ -63,12 +64,15 @@ if uploaded_image is not None:
     # Afficher les résultats
     st.image(new_image, caption="Image personnalisée")
 
-    # Ajouter au panier Shopify
+    # Sauvegarder l'image dans un buffer
     img_buffer = io.BytesIO()
     new_image.save(img_buffer, format="PNG")
     img_buffer.seek(0)
-    image_base64 = f"data:image/png;base64,{img_buffer.getvalue().decode('utf-8')}"
 
+    # Encodage Base64 de l'image
+    image_base64 = f"data:image/png;base64,{base64.b64encode(img_buffer.getvalue()).decode('utf-8')}"
+
+    # Ajouter au panier Shopify
     if st.button("Ajouter au panier"):
         variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
         result = add_to_cart_with_storefront(variant_id, image_base64)
@@ -76,6 +80,7 @@ if uploaded_image is not None:
             st.error(f"Erreur : {result['errors']}")
         else:
             st.success("Produit ajouté avec succès au panier !")
+            st.json(result)
 
 # Fonction Shopify Storefront API
 def add_to_cart_with_storefront(variant_id, image_base64):
