@@ -15,6 +15,53 @@ STORE_URL = "https://tylice2.myshopify.com"
 ADMIN_API_URL = f"{STORE_URL}/admin/api/2023-04"
 STOREFRONT_API_URL = f"{STORE_URL}/api/2023-04/graphql.json"
 
+# Fonction Shopify Storefront API
+def add_to_cart_with_storefront(variant_id, image_base64):
+    headers = {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": STOREFRONT_ACCESS_TOKEN
+    }
+    query = """
+    mutation ($variantId: ID!, $quantity: Int!, $properties: [AttributeInput!]!) {
+        cartLinesAdd(
+            cartId: null,
+            lines: [{
+                merchandiseId: $variantId,
+                quantity: $quantity,
+                attributes: $properties
+            }]
+        ) {
+            cart {
+                id
+                lines(first: 10) {
+                    edges {
+                        node {
+                            id
+                            merchandise {
+                                ... on ProductVariant {
+                                    id
+                                    title
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            userErrors {
+                field
+                message
+            }
+        }
+    }
+    """
+    variables = {
+        "variantId": f"gid://shopify/ProductVariant/{variant_id}",
+        "quantity": 1,
+        "properties": [{"key": "Image", "value": image_base64}]
+    }
+    response = requests.post(STOREFRONT_API_URL, headers=headers, json={"query": query, "variables": variables})
+    return response.json()
+
 # Dictionnaire des couleurs
 pal = {
     "NC": (0, 0, 0), "BJ": (255, 255, 255), "JO": (228, 189, 104), "BC": (0, 134, 214),
@@ -81,50 +128,3 @@ if uploaded_image is not None:
         else:
             st.success("Produit ajouté avec succès au panier !")
             st.json(result)
-
-# Fonction Shopify Storefront API
-def add_to_cart_with_storefront(variant_id, image_base64):
-    headers = {
-        "Content-Type": "application/json",
-        "X-Shopify-Storefront-Access-Token": STOREFRONT_ACCESS_TOKEN
-    }
-    query = """
-    mutation ($variantId: ID!, $quantity: Int!, $properties: [AttributeInput!]!) {
-        cartLinesAdd(
-            cartId: null,
-            lines: [{
-                merchandiseId: $variantId,
-                quantity: $quantity,
-                attributes: $properties
-            }]
-        ) {
-            cart {
-                id
-                lines(first: 10) {
-                    edges {
-                        node {
-                            id
-                            merchandise {
-                                ... on ProductVariant {
-                                    id
-                                    title
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            userErrors {
-                field
-                message
-            }
-        }
-    }
-    """
-    variables = {
-        "variantId": f"gid://shopify/ProductVariant/{variant_id}",
-        "quantity": 1,
-        "properties": [{"key": "Image", "value": image_base64}]
-    }
-    response = requests.post(STOREFRONT_API_URL, headers=headers, json={"query": query, "variables": variables})
-    return response.json()
