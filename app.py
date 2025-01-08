@@ -66,6 +66,8 @@ def upload_to_cloudinary(image_buffer):
     data = {"upload_preset": "image_upload_tylice"}
     try:
         response = requests.post(url, files=files, data=data)
+        st.write("Cloudinary Response Status Code:", response.status_code)
+        st.write("Cloudinary Response Body:", response.json())
         if response.status_code == 200:
             return response.json()["secure_url"]
         else:
@@ -166,8 +168,8 @@ if uploaded_image is not None:
                 f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={urllib.parse.quote(cloudinary_url)}"
             )
 
-            generate_hidden_iframe(shopify_cart_url)
-            st.success("Produit ajouté au panier avec succès !")
+            st.markdown(f"**Cliquez pour ajouter au panier :** [Ajouter au panier]({shopify_cart_url})", unsafe_allow_html=True)
+            st.write("URL générée pour Shopify:", shopify_cart_url)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
