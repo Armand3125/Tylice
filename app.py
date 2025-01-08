@@ -1,39 +1,35 @@
 import streamlit as st
-import requests
-import json
-import urllib.parse
 from PIL import Image
-import io
-from sklearn.cluster import KMeans
 import numpy as np
+from sklearn.cluster import KMeans
+import io
 from datetime import datetime
+import requests
+import urllib.parse
 
-# Shopify Storefront Access
+# Shopify Admin API Config
 SHOPIFY_STORE_URL = "https://tylice2.myshopify.com"
-STOREFRONT_ACCESS_TOKEN = "cc89c5d179a1bbd47e34fda34a26b27a"
+SHOPIFY_API_ADMIN_TOKEN = "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"
 VARIANT_ID_4_COLORS = "50063717106003"  # ID pour 4 couleurs
 VARIANT_ID_6_COLORS = "50063717138771"  # ID pour 6 couleurs
 
-# Cloudinary config
+# Cloudinary Config
 CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
 CLOUDINARY_UPLOAD_PRESET = "image_upload_tylice"
 
-# Streamlit UI
 st.title("Tylice - Personnalisation d'images")
 
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image", type=["jpg", "jpeg", "png"])
 
 # Sélection du nombre de couleurs
-col1, col2 = st.columns([2, 5])
-
 if "num_selections" not in st.session_state:
     st.session_state.num_selections = 4
 
+col1, col2 = st.columns([2, 5])
 with col1:
     if st.button("4 Couleurs : 7.95 €"):
         st.session_state.num_selections = 4
-
 with col2:
     if st.button("6 Couleurs : 11.95 €"):
         st.session_state.num_selections = 6
@@ -51,74 +47,31 @@ def upload_to_cloudinary(image_buffer):
         st.error("Erreur lors de l'envoi à Cloudinary")
         return None
 
-# Fonction pour créer un panier dans Shopify
-def create_cart():
-    url = f"{SHOPIFY_STORE_URL}/api/2023-01/graphql.json"
-    query = """
-    mutation {
-      cartCreate(input: {}) {
-        cart {
-          id
-        }
-        userErrors {
-          field
-          message
-        }
-      }
+# Fonction pour ajouter au panier via Admin API
+def add_to_cart(variant_id, image_url):
+    url = f"{SHOPIFY_STORE_URL}/cart/add.js"
+    payload = {
+        "items": [
+            {
+                "id": variant_id,
+                "quantity": 1,
+                "properties": {
+                    "Image": image_url
+                }
+            }
+        ]
     }
-    """
     headers = {
-        "X-Shopify-Storefront-Access-Token": STOREFRONT_ACCESS_TOKEN,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "X-Shopify-Access-Token": SHOPIFY_API_ADMIN_TOKEN
     }
-    response = requests.post(url, headers=headers, json={"query": query})
-    data = response.json()
-    if "data" in data and "cartCreate" in data["data"] and "cart" in data["data"]["cartCreate"]:
-        return data["data"]["cartCreate"]["cart"]["id"]
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        st.success("Produit ajouté avec succès au panier Shopify principal !")
+        st.write(response.json())
     else:
-        st.error(f"Erreur lors de la création du panier : {data}")
-        return None
-
-# Fonction pour ajouter un produit au panier Shopify
-def add_to_cart(cart_id, variant_id, image_url):
-    url = f"{SHOPIFY_STORE_URL}/api/2023-01/graphql.json"
-    query = f"""
-    mutation {{
-      cartLinesAdd(cartId: "{cart_id}", lines: [
-        {{
-          quantity: 1,
-          merchandiseId: "gid://shopify/ProductVariant/{variant_id}",
-          attributes: [
-            {{ key: "Image", value: "{image_url}" }}
-          ]
-        }}
-      ]) {{
-        cart {{
-          id
-          lines(first: 5) {{
-            edges {{
-              node {{
-                quantity
-                merchandise {{
-                  title
-                }}
-              }}
-            }}
-          }}
-        }}
-        userErrors {{
-          field
-          message
-        }}
-      }}
-    }}
-    """
-    headers = {
-        "X-Shopify-Storefront-Access-Token": STOREFRONT_ACCESS_TOKEN,
-        "Content-Type": "application/json"
-    }
-    response = requests.post(url, headers=headers, json={"query": query})
-    return response.json()
+        st.error("Erreur lors de l'ajout au panier Shopify")
+        st.write(response.json())
 
 # Traitement de l'image téléchargée
 if uploaded_image:
@@ -157,12 +110,7 @@ if uploaded_image:
     if cloudinary_url:
         st.markdown(f"URL de l'image : [Voir l'image]({cloudinary_url})")
 
-        # Création d'un panier
-        cart_id = create_cart()
-        if cart_id:
-            st.write(f"Panier créé avec l'ID : {cart_id}")
-
-            # Ajouter l'image et le produit au panier
-            variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
-            result = add_to_cart(cart_id, variant_id, cloudinary_url)
-            st.write("Résultat de l'ajout au panier : ", result)
+        # Ajouter au panier
+        variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
+        if st.button("Ajouter au panier"):
+            add_to_cart(variant_id, cloudinary_url)
