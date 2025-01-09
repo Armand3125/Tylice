@@ -81,32 +81,87 @@ if uploaded_image is not None:
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
 
+    # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
     px_per_cm = 25
-    new_width_cm = round(new_width / px_per_cm, 1)
-    new_height_cm = round(new_height / px_per_cm, 1)
+    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
 
-    pixels = img_arr.reshape(-1, 3)
-    kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
-    labels = kmeans.labels_
-    centers = kmeans.cluster_centers_
+    if img_arr.shape[-1] == 3:
+        pixels = img_arr.reshape(-1, 3)
+        kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
+        labels = kmeans.labels_
+        centers = kmeans.cluster_centers_
 
-    sorted_indices = np.argsort(-np.bincount(labels) / len(labels))
-    selected_colors = [np.array(centers[i], dtype=int).tolist() for i in sorted_indices]
+        centers_rgb = np.array(centers, dtype=int)
+        pal_rgb = np.array(list(pal.values()), dtype=int)
+        distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
 
-    new_image = Image.fromarray(np.zeros_like(img_arr).astype('uint8'))
-    col1, col2, col3 = st.columns([1, 6, 1])
-    with col2:
-        st.image(new_image, use_container_width=True)
+        ordered_colors_by_cluster = []
+        for i in range(num_selections):
+            closest_colors_idx = distances[i].argsort()
+            ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
 
-    img_buffer = io.BytesIO()
-    new_image.save(img_buffer, format="PNG")
-    img_buffer.seek(0)
+        cluster_counts = np.bincount(labels)
+        total_pixels = len(labels)
+        cluster_percentages = (cluster_counts / total_pixels) * 100
 
-    if st.button("Ajouter au panier"):
-        cloudinary_url = upload_to_cloudinary(img_buffer)
-        if cloudinary_url:
-            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-            encoded_url = urllib.parse.quote(cloudinary_url)
-            shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
-            st.markdown(f"[Ajoutez au panier avec l'image]({shopify_cart_url})", unsafe_allow_html=True)
-            st.markdown(f"[Voir l'image sur Cloudinary]({cloudinary_url})", unsafe_allow_html=True)
+        sorted_indices = np.argsort(-cluster_percentages)
+        sorted_percentages = cluster_percentages[sorted_indices]
+        sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
+
+        selected_colors = []
+        selected_color_names = []
+        cols = st.columns(num_selections * 2)
+        for i, cluster_index in enumerate(sorted_indices):
+            with cols[i * 2]:
+                st.markdown("<div class='color-container'>", unsafe_allow_html=True)
+                for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
+                    color_rgb = pal[color_name]
+                    margin_class = "first-box" if j == 0 else ""
+                    st.markdown(
+                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                        unsafe_allow_html=True
+                    )
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with cols[i * 2 + 1]:
+                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+                selected_colors.append(pal[selected_color_name])
+                selected_color_names.append(selected_color_name)
+
+        new_img_arr = np.zeros_like(img_arr)
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                lbl = labels[i * img_arr.shape[1] + j]
+                new_color_index = np.where(sorted_indices == lbl)[0][0]
+                new_img_arr[i, j] = selected_colors[new_color_index]
+
+        new_image = Image.fromarray(new_img_arr.astype('uint8'))
+
+        col1, col2, col3 = st.columns([1, 6, 1])
+        with col2:
+            st.image(new_image, use_container_width=True)
+
+        img_buffer = io.BytesIO()
+        new_image.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
+
+        if st.button("Ajouter au panier"):
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            if cloudinary_url:
+                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+                encoded_url = urllib.parse.quote(cloudinary_url)
+                shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+                st.markdown(f"[Ajoutez au panier avec l'image]({shopify_cart_url})", unsafe_allow_html=True)
+                st.markdown(f"[Voir l'image sur Cloudinary]({cloudinary_url})", unsafe_allow_html=True)
+
+# Conseils d'utilisation
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+""", unsafe_allow_html=True)
