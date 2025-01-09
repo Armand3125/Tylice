@@ -4,7 +4,6 @@ import numpy as np
 from sklearn.cluster import KMeans
 import io
 import urllib.parse
-import requests
 
 # Variant IDs pour vos produits
 VARIANT_ID_4_COLORS = "50063717106003"
@@ -13,27 +12,8 @@ VARIANT_ID_6_COLORS = "50063717138771"
 # URL de votre boutique Shopify
 SHOPIFY_ADD_TO_CART_URL = "https://tylice2.myshopify.com/cart/add"
 
-# Cloudinary Configuration
-CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
-CLOUDINARY_UPLOAD_PRESET = "image_upload_tylice"
-
-# Fonction pour télécharger une image sur Cloudinary
-def upload_to_cloudinary(image_buffer, filename):
-    files = {"file": image_buffer}
-    data = {"upload_preset": CLOUDINARY_UPLOAD_PRESET, "public_id": filename}
-    try:
-        response = requests.post(CLOUDINARY_URL, files=files, data=data)
-        if response.status_code == 200:
-            return response.json().get("secure_url")
-        else:
-            st.error(f"Erreur Cloudinary : {response.text}")
-            return None
-    except Exception as e:
-        st.error(f"Erreur lors de l'upload Cloudinary : {e}")
-        return None
-
 # Application Streamlit
-st.title("Tylice - Ajout au Panier Shopify avec Cloudinary")
+st.title("Tylice - Ajout au Panier Shopify")
 
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image personnalisée", type=["jpg", "jpeg", "png"])
@@ -70,36 +50,27 @@ if uploaded_image:
     for color in selected_colors:
         st.markdown(f"<div style='background-color: rgb{color}; width: 50px; height: 20px;'></div>", unsafe_allow_html=True)
 
-    # Préparer l'image pour l'upload
-    img_buffer = io.BytesIO()
-    image.save(img_buffer, format="PNG")
-    img_buffer.seek(0)
+    # Préparer les propriétés personnalisées
+    image_url = f"https://upload-lift-example.com/{uploaded_image.name}"  # Simuler une URL d'upload
+    properties = {
+        "Image": image_url,
+        "Couleurs dominantes": ", ".join([f"rgb{color}" for color in selected_colors]),
+    }
 
-    # Télécharger l'image sur Cloudinary
-    filename = f"tylice_{uploaded_image.name.split('.')[0]}"
-    cloudinary_url = upload_to_cloudinary(img_buffer, filename)
+    # Encodage des propriétés pour l'URL
+    encoded_properties = "&".join([f"properties[{urllib.parse.quote(k)}]={urllib.parse.quote(v)}" for k, v in properties.items()])
 
-    if cloudinary_url:
-        # Préparer les propriétés personnalisées
-        properties = {
-            "Image": cloudinary_url,
-            "Couleurs dominantes": ", ".join([f"rgb{color}" for color in selected_colors]),
-        }
+    # Sélection du bon variant ID
+    variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
 
-        # Encodage des propriétés pour l'URL
-        encoded_properties = "&".join([f"properties[{urllib.parse.quote(k)}]={urllib.parse.quote(v)}" for k, v in properties.items()])
+    # Générer le lien de redirection vers Shopify
+    shopify_redirect_url = f"{SHOPIFY_ADD_TO_CART_URL}?id={variant_id}&quantity=1&{encoded_properties}"
 
-        # Sélection du bon variant ID
-        variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
-
-        # Générer le lien de redirection vers Shopify
-        shopify_redirect_url = f"{SHOPIFY_ADD_TO_CART_URL}?id={variant_id}&quantity=1&{encoded_properties}"
-
-        # Bouton pour rediriger l'utilisateur
-        st.markdown(
-            f"<a href='{shopify_redirect_url}' target='_blank' class='button'>Ajouter au panier</a>",
-            unsafe_allow_html=True,
-        )
+    # Bouton pour rediriger l'utilisateur
+    st.markdown(
+        f"<a href='{shopify_redirect_url}' target='_blank' class='button'>Ajouter au panier</a>",
+        unsafe_allow_html=True,
+    )
 
 # Conseils d'utilisation
 st.markdown("""
