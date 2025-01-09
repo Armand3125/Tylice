@@ -3,9 +3,33 @@ from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 import io
-from datetime import datetime
 import requests
-import urllib.parse
+from datetime import datetime
+
+# Shopify Cart Endpoint
+SHOPIFY_CART_URL = "https://tylice2.myshopify.com/cart/add.js"
+
+# Variant IDs pour vos produits
+VARIANT_ID_4_COLORS = "50063717106003"
+VARIANT_ID_6_COLORS = "50063717138771"
+
+# Fonction pour ajouter au panier via une requête POST
+def add_to_cart(variant_id, quantity=1, properties=None):
+    data = {
+        "id": variant_id,
+        "quantity": quantity,
+        "properties": properties or {},
+    }
+    headers = {
+        "Content-Type": "application/json",
+    }
+    response = requests.post(SHOPIFY_CART_URL, json=data, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        st.error(f"Erreur lors de l'ajout au panier : {response.status_code}")
+        st.error(response.text)
+        return None
 
 # Dictionnaire des couleurs
 pal = {
@@ -19,7 +43,8 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-st.title("Tylice - Personnalisation d'images avec Upload-Lift")
+# Application Streamlit
+st.title("Tylice - Ajout au Panier Shopify")
 
 # Style personnalisé
 css = """
@@ -36,8 +61,8 @@ css = """
 """
 st.markdown(css, unsafe_allow_html=True)
 
-# Téléchargement de l'image via Upload-Lift
-uploaded_image = st.file_uploader("Téléchargez votre image personnalisée avec Upload-Lift", type=["jpg", "jpeg", "png"])
+# Téléchargement de l'image
+uploaded_image = st.file_uploader("Téléchargez une image personnalisée", type=["jpg", "jpeg", "png"])
 
 # Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
@@ -55,61 +80,72 @@ with col2:
 
 num_selections = st.session_state.num_selections
 
-# Fonction pour utiliser Upload-Lift
-def get_uploaded_image_url(image):
-    # Simule une URL retournée par Upload-Lift (remplacez par la logique réelle si disponible)
-    # Par exemple, si Upload-Lift retourne une URL publique après upload.
-    return f"https://upload-lift-example.com/{datetime.now().strftime('%Y%m%d%H%M%S')}_{image.name}"
+if uploaded_image:
+    # Affichage de l'image téléchargée
+    image = Image.open(uploaded_image).convert("RGB")
+    st.image(image, caption="Votre image téléchargée", use_column_width=True)
 
-# Fonction de traitement des couleurs dominantes
-def process_image(image, num_colors):
+    # Traitement des couleurs dominantes
     img_arr = np.array(image)
     pixels = img_arr.reshape(-1, 3)
-    kmeans = KMeans(n_clusters=num_colors, random_state=0).fit(pixels)
+    kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
     labels = kmeans.labels_
     centers = kmeans.cluster_centers_
 
-    return labels, centers, img_arr
+    centers_rgb = np.array(centers, dtype=int)
+    pal_rgb = np.array(list(pal.values()), dtype=int)
+    distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
 
-# Traitement de l'image téléchargée
-if uploaded_image is not None:
-    # Ouvrir et redimensionner l'image
-    image = Image.open(uploaded_image).convert("RGB")
-    width, height = image.size
-    dim = 350
-    new_width = dim if width > height else int((dim / height) * width)
-    new_height = dim if height >= width else int((dim / width) * height)
-    resized_image = image.resize((new_width, new_height))
+    ordered_colors_by_cluster = []
+    for i in range(num_selections):
+        closest_colors_idx = distances[i].argsort()
+        ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
 
-    # Transformation des couleurs dominantes
-    labels, centers, img_arr = process_image(resized_image, num_selections)
+    cluster_counts = np.bincount(labels)
+    total_pixels = len(labels)
+    cluster_percentages = (cluster_counts / total_pixels) * 100
 
-    # Génération d'une nouvelle image avec des couleurs dominantes
-    new_img_arr = np.zeros_like(img_arr)
-    sorted_indices = np.argsort(-np.bincount(labels) / len(labels))
-    selected_colors = np.array(centers, dtype=int)
-    for i in range(img_arr.shape[0]):
-        for j in range(img_arr.shape[1]):
-            lbl = labels[i * img_arr.shape[1] + j]
-            new_img_arr[i, j] = selected_colors[sorted_indices[lbl]]
+    sorted_indices = np.argsort(-cluster_percentages)
+    sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
 
-    new_image = Image.fromarray(new_img_arr.astype('uint8'))
+    cols = st.columns(num_selections * 2)
+    selected_colors = []
+    for i, cluster_index in enumerate(sorted_indices):
+        with cols[i * 2]:
+            st.markdown("<div class='color-container'>", unsafe_allow_html=True)
+            for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
+                color_rgb = pal[color_name]
+                margin_class = "first-box" if j == 0 else ""
+                st.markdown(
+                    f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                    unsafe_allow_html=True
+                )
+            st.markdown("</div>", unsafe_allow_html=True)
 
-    # Afficher l'image transformée
-    col1, col2, col3 = st.columns([1, 6, 1])
-    with col2:
-        st.image(new_image, use_container_width=True)
+        with cols[i * 2 + 1]:
+            selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
+            selected_colors.append(pal[selected_color_name])
 
-    # Générer une URL via Upload-Lift
-    upload_lift_url = get_uploaded_image_url(uploaded_image)
-
-    # Ajout au panier avec l'URL de l'image
+    # Ajouter l'image au panier
     if st.button("Ajouter au panier"):
-        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-        encoded_url = urllib.parse.quote(upload_lift_url)
-        shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
-        st.markdown(f"[Ajoutez au panier avec l'image]({shopify_cart_url})", unsafe_allow_html=True)
-        st.markdown(f"[Voir l'image sur Upload-Lift]({upload_lift_url})", unsafe_allow_html=True)
+        # Simuler une URL d'upload pour l'image
+        image_url = f"https://upload-lift-example.com/{uploaded_image.name}"
+
+        # Sélection du bon variant ID
+        variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
+
+        # Ajouter au panier avec des propriétés personnalisées
+        response = add_to_cart(
+            variant_id=variant_id,
+            quantity=1,
+            properties={
+                "Image": image_url,  # URL de l'image uploadée
+                "Couleurs dominantes": ", ".join([f"rgb{color}" for color in selected_colors]),
+            },
+        )
+        if response:
+            st.success("Produit ajouté au panier avec succès !")
+            st.json(response)
 
 # Conseils d'utilisation
 st.markdown("""
