@@ -3,14 +3,17 @@ from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 import io
-import json
+import urllib.parse
 
 # Variant IDs pour vos produits
 VARIANT_ID_4_COLORS = "50063717106003"
 VARIANT_ID_6_COLORS = "50063717138771"
 
+# URL de votre boutique Shopify
+SHOPIFY_CART_URL = "https://tylice2.myshopify.com/cart"
+
 # Application Streamlit
-st.title("Tylice - Ajout au Panier Shopify avec JavaScript")
+st.title("Tylice - Ajout au Panier Shopify avec Redirection")
 
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image personnalisée", type=["jpg", "jpeg", "png"])
@@ -47,48 +50,27 @@ if uploaded_image:
     for color in selected_colors:
         st.markdown(f"<div style='background-color: rgb{color}; width: 50px; height: 20px;'></div>", unsafe_allow_html=True)
 
-    # Préparer l'image pour l'upload (simulation)
-    image_url = f"https://upload-lift-example.com/{uploaded_image.name}"
-
-    # Sélection du bon variant ID
-    variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
-
-    # Propriétés personnalisées
+    # Préparer les propriétés personnalisées
+    image_url = f"https://upload-lift-example.com/{uploaded_image.name}"  # Simuler une URL d'upload
     properties = {
         "Image": image_url,
         "Couleurs dominantes": ", ".join([f"rgb{color}" for color in selected_colors]),
     }
 
-    # Bouton pour ajouter au panier
-    if st.button("Ajouter au panier"):
-        # Génération du script JavaScript
-        js_code = f"""
-        <script>
-        fetch('/cart/add.js', {{
-            method: 'POST',
-            headers: {{
-                'Content-Type': 'application/json',
-            }},
-            body: JSON.stringify({{
-                id: '{variant_id}',
-                quantity: 1,
-                properties: {json.dumps(properties)}
-            }})
-        }})
-        .then(response => {{
-            if (!response.ok) throw new Error('Erreur lors de l\'ajout au panier');
-            return response.json();
-        }})
-        .then(data => {{
-            alert('Produit ajouté au panier avec succès !');
-            console.log(data);
-        }})
-        .catch(error => {{
-            alert('Erreur : ' + error.message);
-        }});
-        </script>
-        """
-        st.markdown(js_code, unsafe_allow_html=True)
+    # Encodage des propriétés pour l'URL
+    encoded_properties = urllib.parse.urlencode({f"properties[{k}]": v for k, v in properties.items()})
+
+    # Sélection du bon variant ID
+    variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
+
+    # Générer le lien de redirection vers Shopify
+    shopify_redirect_url = f"{SHOPIFY_CART_URL}/{variant_id}:1?{encoded_properties}"
+
+    # Bouton pour rediriger l'utilisateur
+    st.markdown(
+        f"<a href='{shopify_redirect_url}' target='_blank' class='button'>Ajouter au panier</a>",
+        unsafe_allow_html=True,
+    )
 
 # Conseils d'utilisation
 st.markdown("""
