@@ -10,10 +10,10 @@ VARIANT_ID_4_COLORS = "50063717106003"
 VARIANT_ID_6_COLORS = "50063717138771"
 
 # URL de votre boutique Shopify
-SHOPIFY_CART_URL = "https://tylice2.myshopify.com/cart"
+SHOPIFY_ADD_TO_CART_URL = "https://tylice2.myshopify.com/cart/add"
 
 # Application Streamlit
-st.title("Tylice - Ajout au Panier Shopify avec Redirection")
+st.title("Tylice - Ajout au Panier Shopify")
 
 # Téléchargement de l'image
 uploaded_image = st.file_uploader("Téléchargez une image personnalisée", type=["jpg", "jpeg", "png"])
@@ -58,13 +58,13 @@ if uploaded_image:
     }
 
     # Encodage des propriétés pour l'URL
-    encoded_properties = urllib.parse.urlencode({f"properties[{k}]": v for k, v in properties.items()})
+    encoded_properties = "&".join([f"properties[{urllib.parse.quote(k)}]={urllib.parse.quote(v)}" for k, v in properties.items()])
 
     # Sélection du bon variant ID
     variant_id = VARIANT_ID_4_COLORS if num_selections == 4 else VARIANT_ID_6_COLORS
 
     # Générer le lien de redirection vers Shopify
-    shopify_redirect_url = f"{SHOPIFY_CART_URL}/{variant_id}:1?{encoded_properties}"
+    shopify_redirect_url = f"{SHOPIFY_ADD_TO_CART_URL}?id={variant_id}&quantity=1&{encoded_properties}"
 
     # Bouton pour rediriger l'utilisateur
     st.markdown(
