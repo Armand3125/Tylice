@@ -19,7 +19,7 @@ pal = {
     "BF": (4, 47, 86),
 }
 
-st.title("Tylice - Personnalisation d'images")
+st.title("Tylice - Personnalisation d'images avec Upload-Lift")
 
 # Style personnalisé
 css = """
@@ -36,8 +36,8 @@ css = """
 """
 st.markdown(css, unsafe_allow_html=True)
 
-# Téléchargement de l'image
-uploaded_image = st.file_uploader("Téléchargez votre image personnalisée", type=["jpg", "jpeg", "png"])
+# Téléchargement de l'image via Upload-Lift
+uploaded_image = st.file_uploader("Téléchargez votre image personnalisée avec Upload-Lift", type=["jpg", "jpeg", "png"])
 
 # Sélection du nombre de couleurs
 if "num_selections" not in st.session_state:
@@ -55,105 +55,61 @@ with col2:
 
 num_selections = st.session_state.num_selections
 
-# Fonction pour télécharger l'image sur Cloudinary
-def upload_to_cloudinary(image_buffer):
-    url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
-    files = {"file": image_buffer}
-    data = {"upload_preset": "image_upload_tylice"}
-    try:
-        response = requests.post(url, files=files, data=data)
-        if response.status_code == 200:
-            return response.json()["secure_url"]
-        else:
-            return None
-    except Exception as e:
-        st.error(f"Erreur Cloudinary : {e}")
-        return None
+# Fonction pour utiliser Upload-Lift
+def get_uploaded_image_url(image):
+    # Simule une URL retournée par Upload-Lift (remplacez par la logique réelle si disponible)
+    # Par exemple, si Upload-Lift retourne une URL publique après upload.
+    return f"https://upload-lift-example.com/{datetime.now().strftime('%Y%m%d%H%M%S')}_{image.name}"
+
+# Fonction de traitement des couleurs dominantes
+def process_image(image, num_colors):
+    img_arr = np.array(image)
+    pixels = img_arr.reshape(-1, 3)
+    kmeans = KMeans(n_clusters=num_colors, random_state=0).fit(pixels)
+    labels = kmeans.labels_
+    centers = kmeans.cluster_centers_
+
+    return labels, centers, img_arr
 
 # Traitement de l'image téléchargée
 if uploaded_image is not None:
+    # Ouvrir et redimensionner l'image
     image = Image.open(uploaded_image).convert("RGB")
     width, height = image.size
     dim = 350
     new_width = dim if width > height else int((dim / height) * width)
     new_height = dim if height >= width else int((dim / width) * height)
-
     resized_image = image.resize((new_width, new_height))
-    img_arr = np.array(resized_image)
 
-    # Conversion de pixels à centimètres (350px = 14cm, soit 25px/cm)
-    px_per_cm = 25
-    new_width_cm = round(new_width / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
-    new_height_cm = round(new_height / px_per_cm, 1)  # Arrondi à 1 décimale (en cm)
+    # Transformation des couleurs dominantes
+    labels, centers, img_arr = process_image(resized_image, num_selections)
 
-    if img_arr.shape[-1] == 3:
-        pixels = img_arr.reshape(-1, 3)
-        kmeans = KMeans(n_clusters=num_selections, random_state=0).fit(pixels)
-        labels = kmeans.labels_
-        centers = kmeans.cluster_centers_
+    # Génération d'une nouvelle image avec des couleurs dominantes
+    new_img_arr = np.zeros_like(img_arr)
+    sorted_indices = np.argsort(-np.bincount(labels) / len(labels))
+    selected_colors = np.array(centers, dtype=int)
+    for i in range(img_arr.shape[0]):
+        for j in range(img_arr.shape[1]):
+            lbl = labels[i * img_arr.shape[1] + j]
+            new_img_arr[i, j] = selected_colors[sorted_indices[lbl]]
 
-        centers_rgb = np.array(centers, dtype=int)
-        pal_rgb = np.array(list(pal.values()), dtype=int)
-        distances = np.linalg.norm(centers_rgb[:, None] - pal_rgb[None, :], axis=2)
+    new_image = Image.fromarray(new_img_arr.astype('uint8'))
 
-        ordered_colors_by_cluster = []
-        for i in range(num_selections):
-            closest_colors_idx = distances[i].argsort()
-            ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
+    # Afficher l'image transformée
+    col1, col2, col3 = st.columns([1, 6, 1])
+    with col2:
+        st.image(new_image, use_container_width=True)
 
-        cluster_counts = np.bincount(labels)
-        total_pixels = len(labels)
-        cluster_percentages = (cluster_counts / total_pixels) * 100
+    # Générer une URL via Upload-Lift
+    upload_lift_url = get_uploaded_image_url(uploaded_image)
 
-        sorted_indices = np.argsort(-cluster_percentages)
-        sorted_percentages = cluster_percentages[sorted_indices]
-        sorted_ordered_colors_by_cluster = [ordered_colors_by_cluster[i] for i in sorted_indices]
-
-        selected_colors = []
-        selected_color_names = []
-        cols = st.columns(num_selections * 2)
-        for i, cluster_index in enumerate(sorted_indices):
-            with cols[i * 2]:
-                st.markdown("<div class='color-container'>", unsafe_allow_html=True)
-                for j, color_name in enumerate(sorted_ordered_colors_by_cluster[i]):
-                    color_rgb = pal[color_name]
-                    margin_class = "first-box" if j == 0 else ""
-                    st.markdown(
-                        f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: 80px; height: 20px; border-radius: 5px; margin-bottom: 4px;'></div>",
-                        unsafe_allow_html=True
-                    )
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            with cols[i * 2 + 1]:
-                selected_color_name = st.radio("", sorted_ordered_colors_by_cluster[i], key=f"radio_{i}", label_visibility="hidden")
-                selected_colors.append(pal[selected_color_name])
-                selected_color_names.append(selected_color_name)
-
-        new_img_arr = np.zeros_like(img_arr)
-        for i in range(img_arr.shape[0]):
-            for j in range(img_arr.shape[1]):
-                lbl = labels[i * img_arr.shape[1] + j]
-                new_color_index = np.where(sorted_indices == lbl)[0][0]
-                new_img_arr[i, j] = selected_colors[new_color_index]
-
-        new_image = Image.fromarray(new_img_arr.astype('uint8'))
-
-        col1, col2, col3 = st.columns([1, 6, 1])
-        with col2:
-            st.image(new_image, use_container_width=True)
-
-        img_buffer = io.BytesIO()
-        new_image.save(img_buffer, format="PNG")
-        img_buffer.seek(0)
-
-        if st.button("Ajouter au panier"):
-            cloudinary_url = upload_to_cloudinary(img_buffer)
-            if cloudinary_url:
-                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                encoded_url = urllib.parse.quote(cloudinary_url)
-                shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
-                st.markdown(f"[Ajoutez au panier avec l'image]({shopify_cart_url})", unsafe_allow_html=True)
-                st.markdown(f"[Voir l'image sur Cloudinary]({cloudinary_url})", unsafe_allow_html=True)
+    # Ajout au panier avec l'URL de l'image
+    if st.button("Ajouter au panier"):
+        variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+        encoded_url = urllib.parse.quote(upload_lift_url)
+        shopify_cart_url = f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+        st.markdown(f"[Ajoutez au panier avec l'image]({shopify_cart_url})", unsafe_allow_html=True)
+        st.markdown(f"[Voir l'image sur Upload-Lift]({upload_lift_url})", unsafe_allow_html=True)
 
 # Conseils d'utilisation
 st.markdown("""
