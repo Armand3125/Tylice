@@ -32,6 +32,7 @@ css = """
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
+        .shopify-link { font-size: 20px; font-weight: bold; text-decoration: none; color: #2e86de; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
@@ -164,7 +165,10 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_image_url}"
             )
-            st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+            st.markdown(
+                f"<a href='{shopify_cart_url}' class='shopify-link'>Ajouter au panier</a>",
+                unsafe_allow_html=True
+            )
 
 # Affichage des conseils d'utilisation
 st.markdown("""
