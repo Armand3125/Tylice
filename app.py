@@ -154,26 +154,19 @@ if uploaded_image is not None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
-        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            st.markdown(f"**{new_width_cm} cm x {new_height_cm} cm**")
-
-        # Ajout au panier avec la nouvelle propriété personnalisée
-        if st.button("Ajouter au panier"):
-            cloudinary_url = upload_to_cloudinary(img_buffer)
-            if not cloudinary_url:
-                st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
-            else:
-                variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-                # Encodage de l'URL pour Shopify
-                encoded_url = urllib.parse.quote(cloudinary_url)
-                # Utilisation de la bonne URL pour ajouter au panier
-                shopify_cart_url = (
-                    f"https://tylice2.myshopify.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_url}&properties[Couleurs%20dominantes]=" + 
-                    ", ".join([f"rgb({color[0]}%2C%20{color[1]}%2C%20{color[2]})" for color in selected_colors])
-                )
-                st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
-                st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
+        cloudinary_url = upload_to_cloudinary(img_buffer)
+        if not cloudinary_url:
+            st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
+        else:
+            variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
+            # Encodage de l'URL pour Shopify
+            encoded_url = urllib.parse.quote(cloudinary_url)
+            # URL pour ajouter au panier
+            shopify_cart_url = (
+                f"https://tylice2.myshopify.com/cart/add.js?id={variant_id}&quantity=1&properties%5BImage%5D={encoded_url}"
+            )
+            st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
+            st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
