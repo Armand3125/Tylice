@@ -148,12 +148,13 @@ if uploaded_image is not None:
         with col2:
             st.image(resized_image, use_container_width=True)
 
+        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
+        with col2:
+            st.markdown(f"**Dimensions : {new_width_cm} cm x {new_height_cm} cm**")
+
         img_buffer = io.BytesIO()
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{''.join(selected_color_names)}_{timestamp}.png"
 
         cloudinary_url = upload_to_cloudinary(img_buffer)
         if not cloudinary_url:
