@@ -33,6 +33,7 @@ css = """
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
         .shopify-link { font-size: 20px; font-weight: bold; text-decoration: none; color: #2e86de; }
+        .dimension-text { font-size: 16px; font-weight: bold; color: #555; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
@@ -148,10 +149,6 @@ if uploaded_image is not None:
         with col2:
             st.image(resized_image, use_container_width=True)
 
-        col1, col2, col3, col4 = st.columns([4, 5, 5, 4])
-        with col2:
-            st.markdown(f"**Dimensions : {new_width_cm} cm x {new_height_cm} cm**")
-
         img_buffer = io.BytesIO()
         new_image.save(img_buffer, format="PNG")
         img_buffer.seek(0)
@@ -166,10 +163,13 @@ if uploaded_image is not None:
             shopify_cart_url = (
                 f"https://tylice2.myshopify.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_image_url}"
             )
-            st.markdown(
-                f"<a href='{shopify_cart_url}' class='shopify-link'>Ajouter au panier</a>",
-                unsafe_allow_html=True
-            )
+
+            # Affichage dimensions et bouton "Ajouter au panier" sur une seule ligne
+            col1, col2, col3, col4 = st.columns([4, 4, 4, 4])
+            with col2:
+                st.markdown(f"<p class='dimension-text'>Dimensions : {new_width_cm} cm x {new_height_cm} cm</p>", unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"<a href='{shopify_cart_url}' class='shopify-link'>Ajouter au panier</a>", unsafe_allow_html=True)
 
 # Affichage des conseils d'utilisation
 st.markdown("""
