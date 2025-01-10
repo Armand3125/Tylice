@@ -159,10 +159,10 @@ if uploaded_image is not None:
             st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
         else:
             variant_id = "50063717106003" if num_selections == 4 else "50063717138771"
-            # Générer l'URL sans les couleurs dominantes
+            # Générer l'URL avec uniquement l'image
             encoded_image_url = urllib.parse.quote(cloudinary_url)
             shopify_cart_url = (
-                f"https://tylice2.myshopify.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_image_url}&properties[Nombre%20de%20couleurs]={num_selections}"
+                f"https://tylice2.myshopify.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_image_url}"
             )
             st.markdown(f"[Ajouter au panier avec l'image générée]({shopify_cart_url})", unsafe_allow_html=True)
             st.markdown(f"**Lien direct de l'image sur Cloudinary :** [Voir l'image]({cloudinary_url})", unsafe_allow_html=True)
