@@ -167,7 +167,7 @@ if uploaded_image is not None:
             # Affichage dimensions et bouton "Ajouter au panier" sur une seule ligne
             col1, col2, col3, col4 = st.columns([4, 4, 4, 4])
             with col2:
-                st.markdown(f"<p class='dimension-text'>Dimensions : {new_width_cm} cm x {new_height_cm} cm</p>", unsafe_allow_html=True)
+                st.markdown(f"<p class='dimension-text'> {new_width_cm} cm x {new_height_cm} cm</p>", unsafe_allow_html=True)
             with col3:
                 st.markdown(f"<a href='{shopify_cart_url}' class='shopify-link'>Ajouter au panier</a>", unsafe_allow_html=True)
 
