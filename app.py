@@ -259,7 +259,7 @@ if uploaded_image is not None:
                 new_color_index = np.where(sorted_indices_pers == lbl)[0][0]
                 new_img_arr_pers[i, j] = selected_colors[new_color_index]
 
-        new_image_pers = Image.fromarray(new_img_arr_pers.astype('uint8'))
+        new_image_pers = Image.fromarray(new_img_pers.astype('uint8'))
         resized_image_pers_final = new_image_pers
 
         # Affichage de l'image recolorée
@@ -331,9 +331,3 @@ if uploaded_image is not None:
                 st.error("Erreur lors de l'upload de l'image.")
 
         col_count += 1
-
-# =========================================
-# Section 5: Affichage des conseils d'utilisation (Déplacé en haut)
-# =========================================
-# (Déjà déplacé au début du code)
-
