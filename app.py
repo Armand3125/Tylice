@@ -137,6 +137,9 @@ uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg"
 # Sections conditionnelles après upload d'image
 # =========================================
 if uploaded_image is not None:
+    # Réinitialiser le nombre de sélections à 4 lors du téléchargement d'une nouvelle image
+    st.session_state.num_selections = 4
+
     # =========================================
     # Section 2: Sélection du nombre de couleurs
     # =========================================
@@ -148,10 +151,6 @@ if uploaded_image is not None:
     with col2:
         if st.button("6 Couleurs : 11.95 €", key="select_6"):
             st.session_state.num_selections = 6
-
-    # Initialisation du nombre de sélections si non défini
-    if "num_selections" not in st.session_state:
-        st.session_state.num_selections = 4  # Valeur par défaut
 
     num_selections = st.session_state.num_selections
 
