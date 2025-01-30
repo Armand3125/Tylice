@@ -12,7 +12,7 @@ import urllib.parse
 
 def upload_to_cloudinary(image_buffer):
     """
-    Uploads an image to Cloudinary and returns the secure URL.
+    Télécharge une image sur Cloudinary et retourne l'URL sécurisée.
     """
     url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
     files = {"file": image_buffer}
@@ -30,7 +30,7 @@ def upload_to_cloudinary(image_buffer):
 
 def generate_shopify_cart_url(cloudinary_url, num_colors):
     """
-    Generates a Shopify cart URL with the given image URL and variant ID based on the number of colors.
+    Génère une URL de panier Shopify avec l'URL de l'image et l'ID de variante basé sur le nombre de couleurs.
     """
     variant_id = "50063717106003" if num_colors == 4 else "50063717138771"
     encoded_image_url = urllib.parse.quote(cloudinary_url)
@@ -41,13 +41,17 @@ def generate_shopify_cart_url(cloudinary_url, num_colors):
 
 def process_image(image, num_clusters):
     """
-    Processes the image by resizing and applying KMeans clustering.
-    Returns the resized image array, labels, and sorted cluster indices.
+    Traite l'image en la redimensionnant et en appliquant le clustering KMeans.
+    Retourne l'image redimensionnée, le tableau d'image, les labels et les indices triés des clusters.
     """
     width, height = image.size
     dim = 350  # Réduction à 350 pixels pour la plus grande dimension
-    new_width = dim if width > height else int((dim / height) * width)
-    new_height = dim if height >= width else int((dim / width) * height)
+    if width > height:
+        new_width = dim
+        new_height = int((dim / width) * height)
+    else:
+        new_height = dim
+        new_width = int((dim / height) * width)
 
     resized_image = image.resize((new_width, new_height))
     img_arr = np.array(resized_image)
@@ -64,7 +68,7 @@ def process_image(image, num_clusters):
 
 def recolor_image(img_arr, labels, sorted_indices, palette_colors):
     """
-    Recolors the image array based on the provided palette colors.
+    Recolorise le tableau d'image basé sur les couleurs de la palette fournie.
     """
     recolored_img_arr = np.zeros_like(img_arr)
     for i in range(img_arr.shape[0]):
@@ -151,25 +155,9 @@ if uploaded_image is not None:
         st.session_state.previous_image = uploaded_image.name
 
 # =========================================
-# Affichage Conditionnel
+# Sections conditionnelles après upload d'image
 # =========================================
-if uploaded_image is None:
-    # =========================================
-    # Section 5: Affichage des conseils d'utilisation
-    # =========================================
-    st.markdown("""
-        ### 📝 Conseils d'utilisation :
-        - Les couleurs les plus compatibles avec l'image apparaissent en premier.
-        - Préférez des images avec un bon contraste et des éléments bien définis.
-        - Une **image carrée** donnera un meilleur résultat.
-        - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
-        - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
-        - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
-    """, unsafe_allow_html=True)
-else:
-    # =========================================
-    # Sections conditionnelles après upload d'image
-    # =========================================
+if uploaded_image is not None:
     # =========================================
     # Section 2: Sélection du nombre de couleurs
     # =========================================
@@ -289,9 +277,6 @@ else:
     # =========================================
     st.header("Exemples de Recoloration")
 
-    image = Image.open(uploaded_image).convert("RGB")
-    resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_selections)
-
     # Déterminer les palettes et le nombre de clusters
     if num_selections == 4:
         palettes = palettes_examples_4
@@ -307,7 +292,7 @@ else:
     for palette in palettes:
         palette_colors = [pal[color] for color in palette]
 
-        recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
+        recolored_image = recolor_image(img_arr_pers, labels_pers, sorted_indices_pers, palette_colors)
 
         # Convert recolored image to buffer for upload
         img_buffer = io.BytesIO()
@@ -333,3 +318,16 @@ else:
                 st.error("Erreur lors de l'upload de l'image.")
 
         col_count += 1
+
+# =========================================
+# Section 5: Affichage des conseils d'utilisation
+# =========================================
+st.markdown("""
+    ### 📝 Conseils d'utilisation :
+    - Les couleurs les plus compatibles avec l'image apparaissent en premier.
+    - Préférez des images avec un bon contraste et des éléments bien définis.
+    - Une **image carrée** donnera un meilleur résultat.
+    - Il est recommandé d'inclure au moins une **zone de noir ou de blanc** pour assurer un bon contraste.
+    - Utiliser des **familles de couleurs** (ex: blanc, jaune, orange, rouge) peut produire des résultats visuellement intéressants.
+    - **Expérimentez** avec différentes combinaisons pour trouver l'esthétique qui correspond le mieux à votre projet !
+""", unsafe_allow_html=True)
