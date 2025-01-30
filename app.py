@@ -134,12 +134,26 @@ st.markdown(css, unsafe_allow_html=True)
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
 
 # =========================================
+# Initialisation de l'état de session
+# =========================================
+if 'num_selections' not in st.session_state:
+    st.session_state.num_selections = 4  # Valeur par défaut
+
+if 'previous_image' not in st.session_state:
+    st.session_state.previous_image = None
+
+# =========================================
+# Réinitialiser le nombre de sélections si une nouvelle image est téléchargée
+# =========================================
+if uploaded_image is not None:
+    if st.session_state.previous_image != uploaded_image.name:
+        st.session_state.num_selections = 4  # Réinitialiser à 4 couleurs pour une nouvelle image
+        st.session_state.previous_image = uploaded_image.name
+
+# =========================================
 # Sections conditionnelles après upload d'image
 # =========================================
 if uploaded_image is not None:
-    # Réinitialiser le nombre de sélections à 4 lors du téléchargement d'une nouvelle image
-    st.session_state.num_selections = 4
-
     # =========================================
     # Section 2: Sélection du nombre de couleurs
     # =========================================
@@ -163,6 +177,7 @@ if uploaded_image is not None:
     rectangle_height = 20
     cols_personalization = st.columns(num_selections * 2)
 
+    # Charger et traiter l'image
     image_pers = Image.open(uploaded_image).convert("RGB")
     resized_image_pers, img_arr_pers, labels_pers, sorted_indices_pers, new_width_pers, new_height_pers = process_image(
         image_pers, num_clusters=num_selections
