@@ -35,7 +35,7 @@ def generate_shopify_cart_url(cloudinary_url, num_colors):
     variant_id = "50063717106003" if num_colors == 4 else "50063717138771"
     encoded_image_url = urllib.parse.quote(cloudinary_url)
     shopify_cart_url = (
-        f"https://tylice2.myshopify.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_image_url}"
+        f"https://tylice.com/cart/add?id={variant_id}&quantity=1&properties[Image]={encoded_image_url}"
     )
     return shopify_cart_url
 
