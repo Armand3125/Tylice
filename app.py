@@ -238,7 +238,9 @@ if uploaded_image is not None:
 
         # Ajout du message d'avertissement
         st.markdown(
-            "<p style='color: #FF6347; font-size: 16px; font-weight: bold;'>L'affichage n'est pas optimisé pour les appareils mobiles, veuillez utiliser un ordinateur pour une meilleure expérience.</p>",
+            "<p style='color: #64AF96; font-size: 16px; font-weight: bold;'>"
+            "L'affichage de cette section n'est pas optimisé pour les appareils mobiles. "
+            "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
             unsafe_allow_html=True
         )
 
