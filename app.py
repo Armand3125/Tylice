@@ -225,9 +225,9 @@ if uploaded_image is not None:
     with col_ex:
         st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
     with col_4:
-        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=select_4)
+        st.button("Personnalisation 4 Couleurs", key="select_4_btn", on_click=select_4)
     with col_6:
-        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=select_6)
+        st.button("Personnalisation 6 Couleurs", key="select_6_btn", on_click=select_6)
 
     num_selections = st.session_state.num_selections
 
@@ -243,7 +243,6 @@ if uploaded_image is not None:
             "L'affichage de cette section n'est pas optimisé pour les appareils mobiles. "
             "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
             unsafe_allow_html=True
-
         )
 
         rectangle_width = 80 if num_selections == 4 else 50
@@ -315,7 +314,7 @@ if uploaded_image is not None:
                 with cols_info[0]:
                     st.markdown(f"<p class='dimension-text'>{new_width_cm} cm x {new_height_cm} cm</p>", unsafe_allow_html=True)
                 with cols_info[1]:
-                    st.markdown(f"<div class='label'>{num_selections} Couleurs - {'7.95' if num_selections == 4 else '11.95'} €</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='label'>{num_selections} Couleurs</div>", unsafe_allow_html=True)
                 with cols_info[2]:
                     img_buffer_pers = io.BytesIO()
                     new_image_pers.save(img_buffer_pers, format="PNG")
