@@ -160,6 +160,9 @@ css = """
             background-color: #539E7D !important;
         }
         div.row-widget.stHorizontal { gap: 0 !important; }
+        .selected-button {
+            background-color: #539E7D !important;
+        }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
@@ -219,14 +222,25 @@ if uploaded_image is not None:
     if not st.session_state.show_examples and not st.session_state.show_personalization:
         st.session_state.show_examples = True
 
-    # Boutons en haut sur toute la largeur, ordre : Exemples, 4 Couleurs, 6 Couleurs
+    # Boutons en haut sur toute la largeur, ordre : Exemples, Personnalisation 4 Couleurs, Personnalisation 6 Couleurs
     col_ex, col_4, col_6 = st.columns([1, 1, 1])
+    
+    # Ajouter un style aux boutons sélectionnés
+    selected_4 = st.session_state.num_selections == 4
+    selected_6 = st.session_state.num_selections == 6
+
     with col_ex:
         st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
+    
     with col_4:
-        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=select_4)
+        st.button("Personnalisation 4 Couleurs", key="select_4_btn", on_click=select_4, 
+                  help="Personnalisation avec 4 couleurs", 
+                  css="background-color: #64AF96;" if selected_4 else "")
+    
     with col_6:
-        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=select_6)
+        st.button("Personnalisation 6 Couleurs", key="select_6_btn", on_click=select_6,
+                  help="Personnalisation avec 6 couleurs",
+                  css="background-color: #64AF96;" if selected_6 else "")
 
     num_selections = st.session_state.num_selections
 
@@ -243,6 +257,10 @@ if uploaded_image is not None:
             "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
             unsafe_allow_html=True
         )
+        
+    # Le reste du code continue normalement après cette modification
+    # ...
+
 
         rectangle_width = 80 if num_selections == 4 else 50
         rectangle_height = 20
