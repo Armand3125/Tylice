@@ -220,10 +220,10 @@ if uploaded_image is not None:
     if not st.session_state.show_examples and not st.session_state.show_personalization:
         st.session_state.show_examples = True
 
-    # Boutons en haut sur toute la largeur, ordre : Exemples, 4 Couleurs, 6 Couleurs
+    # Boutons en haut sur toute la largeur, ordre : Exemples de Recoloration, Personnalisation 4 Couleurs, Personnalisation 6 Couleurs
     col_ex, col_4, col_6 = st.columns([1, 1, 1])
     with col_ex:
-        st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
+        st.button("Exemples de Recoloration", key="show_examples_btn", on_click=show_examples_callback)
     with col_4:
         st.button("Personnalisation 4 Couleurs", key="select_4_btn", on_click=select_4)
     with col_6:
@@ -235,7 +235,7 @@ if uploaded_image is not None:
     # Section Personnalisation
     # =========================================
     if st.session_state.show_personalization and num_selections in [4, 6]:
-        st.header("Personnalisations")
+        st.header(f"Personnalisation {num_selections} Couleurs")
 
         # Ajout du message d'avertissement
         st.markdown(
