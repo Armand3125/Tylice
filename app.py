@@ -116,7 +116,11 @@ css = """
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
         .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
-        .color-box { border: 3px solid black; margin-bottom: 20px; padding-bottom: 10px; }  /* Marge sous les color-box */
+        .color-box { 
+            border: 3px solid black; 
+            margin-bottom: 20px;  /* Marge sous les color-box */
+            padding-bottom: 10px; /* Espacement sous les color-box */
+        }  
         .stColumn { padding: 0 !important; }
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
@@ -127,6 +131,7 @@ css = """
             font-weight: bold;
             text-decoration: none;
             color: #242833;
+            margin-top: 10px; /* Marge au-dessus du lien */
         }
         .dimension-text {
             font-size: 14px;
@@ -163,6 +168,7 @@ css = """
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
 
 # =========================================
 # Initialisation des variables de session
