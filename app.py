@@ -145,9 +145,9 @@ css = """
             display: inline-block;
             margin-left: 10px;
         }
-        /* Boutons en haut */
+        /* Boutons en haut avec couleur #64AF96 */
         div.stButton > button {
-            background-color: #242833 !important;
+            background-color: #64AF96 !important;
             color: #ffffff !important;
             border: none !important;
             border-radius: 5px !important;
@@ -157,7 +157,7 @@ css = """
             width: 100% !important;
         }
         div.stButton > button:hover {
-            background-color: #1d1f2a !important;
+            background-color: #539E7D !important;
         }
         div.row-widget.stHorizontal { gap: 0 !important; }
     </style>
