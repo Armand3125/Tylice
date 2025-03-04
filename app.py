@@ -132,7 +132,8 @@ css = """
             font-weight: bold;
             text-decoration: none;
             color: #242833;
-            margin-top: 30px; /* Augmenter l'espacement au-dessus du lien */
+            margin-top: 30px; /* Espacement au-dessus du lien */
+            margin-bottom: 40px; /* Ajouter plus d'espacement sous le lien */
         }
         .dimension-text {
             font-size: 14px;
@@ -169,6 +170,7 @@ css = """
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
 
 
 
