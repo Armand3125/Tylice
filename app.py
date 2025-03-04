@@ -164,8 +164,6 @@ css = """
 """
 st.markdown(css, unsafe_allow_html=True)
 
-
-
 # =========================================
 # Initialisation des variables de session
 # =========================================
