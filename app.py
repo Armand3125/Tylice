@@ -160,6 +160,17 @@ css = """
             background-color: #539E7D !important;
         }
         div.row-widget.stHorizontal { gap: 0 !important; }
+        /* Couleur du fond pour les boutons dans les sections de palettes */
+        .color-button {
+            background-color: #64AF96 !important;
+            color: white !important;
+            font-weight: bold !important;
+            padding: 8px 16px !important;
+            border-radius: 5px !important;
+        }
+        .color-button:hover {
+            background-color: #539E7D !important;
+        }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
@@ -222,11 +233,11 @@ if uploaded_image is not None:
     # Boutons en haut sur toute la largeur, ordre : Exemples, 4 Couleurs, 6 Couleurs
     col_ex, col_4, col_6 = st.columns([1, 1, 1])
     with col_ex:
-        st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
+        st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback, help="Voir des exemples de recoloration", use_container_width=True, key="exemples_btn", css_class="color-button")
     with col_4:
-        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=select_4)
+        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=select_4, use_container_width=True, key="select_4_btn", css_class="color-button")
     with col_6:
-        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=select_6)
+        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=select_6, use_container_width=True, key="select_6_btn", css_class="color-button")
 
     num_selections = st.session_state.num_selections
 
