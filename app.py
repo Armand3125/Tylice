@@ -236,6 +236,12 @@ if uploaded_image is not None:
     if st.session_state.show_personalization and num_selections in [4, 6]:
         st.header("Personnalisations")
 
+        # Ajout du message d'avertissement
+        st.markdown(
+            "<p style='color: #FF6347; font-size: 16px; font-weight: bold;'>L'affichage n'est pas optimisé pour les appareils mobiles, veuillez utiliser un ordinateur pour une meilleure expérience.</p>",
+            unsafe_allow_html=True
+        )
+
         rectangle_width = 80 if num_selections == 4 else 50
         rectangle_height = 20
         cols_personalization = st.columns(num_selections * 2)
