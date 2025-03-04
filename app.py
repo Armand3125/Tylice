@@ -118,8 +118,9 @@ css = """
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
         .color-box { 
             border: 3px solid black; 
-            margin-bottom: 40px;  /* Augmenter l'espacement sous les color-box */
-            padding-bottom: 20px; /* Ajouter du padding sous les color-box */
+            margin-top: 10px;  /* Réduire la marge au-dessus de l'encadré noir */
+            margin-bottom: 60px;  /* Augmenter l'espacement sous les color-box */
+            padding-bottom: 20px; /* Espacement interne sous les color-box */
         }  
         .stColumn { padding: 0 !important; }
         .first-box { margin-top: 15px; }
@@ -131,7 +132,7 @@ css = """
             font-weight: bold;
             text-decoration: none;
             color: #242833;
-            margin-top: 20px; /* Augmenter l'espacement au-dessus du lien */
+            margin-top: 30px; /* Augmenter l'espacement au-dessus du lien */
         }
         .dimension-text {
             font-size: 14px;
