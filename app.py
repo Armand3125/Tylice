@@ -159,6 +159,18 @@ css = """
         div.stButton > button:hover {
             background-color: #539E7D !important;
         }
+        /* Encadré 4 Couleurs et 6 Couleurs */
+        .color-selection-box {
+            background-color: #64AF96;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            color: white;
+            text-align: center;
+        }
+        .color-selection-box:hover {
+            background-color: #539E7D;
+        }
         div.row-widget.stHorizontal { gap: 0 !important; }
     </style>
 """
@@ -224,9 +236,11 @@ if uploaded_image is not None:
     with col_ex:
         st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
     with col_4:
-        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=select_4)
+        st.markdown(f"<div class='color-selection-box'>4 Couleurs : 7.95 €</div>", unsafe_allow_html=True)
+        st.button("4 Couleurs", key="select_4_btn", on_click=select_4)
     with col_6:
-        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=select_6)
+        st.markdown(f"<div class='color-selection-box'>6 Couleurs : 11.95 €</div>", unsafe_allow_html=True)
+        st.button("6 Couleurs", key="select_6_btn", on_click=select_6)
 
     num_selections = st.session_state.num_selections
 
