@@ -233,14 +233,14 @@ if uploaded_image is not None:
         st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
     
     with col_4:
-        st.button("Personnalisation 4 Couleurs", key="select_4_btn", on_click=select_4, 
-                  help="Personnalisation avec 4 couleurs", 
-                  css="background-color: #64AF96;" if selected_4 else "")
+        button_style_4 = "selected-button" if selected_4 else ""
+        st.markdown(f'<button class="stButton {button_style_4}">Personnalisation 4 Couleurs</button>', unsafe_allow_html=True)
+        st.button("Personnalisation 4 Couleurs", key="select_4_btn", on_click=select_4)
     
     with col_6:
-        st.button("Personnalisation 6 Couleurs", key="select_6_btn", on_click=select_6,
-                  help="Personnalisation avec 6 couleurs",
-                  css="background-color: #64AF96;" if selected_6 else "")
+        button_style_6 = "selected-button" if selected_6 else ""
+        st.markdown(f'<button class="stButton {button_style_6}">Personnalisation 6 Couleurs</button>', unsafe_allow_html=True)
+        st.button("Personnalisation 6 Couleurs", key="select_6_btn", on_click=select_6)
 
     num_selections = st.session_state.num_selections
 
@@ -257,9 +257,6 @@ if uploaded_image is not None:
             "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
             unsafe_allow_html=True
         )
-        
-    # Le reste du code continue normalement après cette modification
-    # ...
 
 
         rectangle_width = 80 if num_selections == 4 else 50
