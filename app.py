@@ -12,7 +12,7 @@ import urllib.parse
 
 def upload_to_cloudinary(image_buffer):
     """
-    Télécharge une image sur Cloudinary et renvoie l'URL sécurisée.
+    Uploads an image to Cloudinary and returns the secure URL.
     """
     url = "https://api.cloudinary.com/v1_1/dprmsetgi/image/upload"
     files = {"file": image_buffer}
@@ -30,7 +30,7 @@ def upload_to_cloudinary(image_buffer):
 
 def generate_shopify_cart_url(cloudinary_url, num_colors):
     """
-    Génère une URL de panier Shopify avec l'URL de l'image et l'ID de variante basé sur le nombre de couleurs.
+    Generates a Shopify cart URL with the given image URL and variant ID based on the number of colors.
     """
     variant_id = "50063717106003" if num_colors == 4 else "50063717138771"
     encoded_image_url = urllib.parse.quote(cloudinary_url)
@@ -41,8 +41,8 @@ def generate_shopify_cart_url(cloudinary_url, num_colors):
 
 def process_image(image, num_clusters):
     """
-    Traite l'image en la redimensionnant et en appliquant le clustering KMeans.
-    Retourne l'image redimensionnée, les étiquettes et les indices de clusters triés.
+    Processes the image by resizing and applying KMeans clustering.
+    Returns the resized image array, labels, and sorted cluster indices.
     """
     width, height = image.size
     dim = 350  # Réduction à 350 pixels pour la plus grande dimension
@@ -64,7 +64,7 @@ def process_image(image, num_clusters):
 
 def recolor_image(img_arr, labels, sorted_indices, palette_colors):
     """
-    Recolore l'image en fonction des couleurs de la palette fournie.
+    Recolors the image array based on the provided palette colors.
     """
     recolored_img_arr = np.zeros_like(img_arr)
     for i in range(img_arr.shape[0]):
@@ -113,16 +113,6 @@ st.title("Tylice")
 
 css = """
     <style>
-        /* Personnalisation de l'interface pour changer le texte par défaut du file uploader */
-        .stFileUploader input[type='file']::before {
-            content: 'Glissez et déposez un fichier ici ou cliquez pour sélectionner'; 
-            font-size: 14px;
-            color: #555;
-        }
-        .stFileUploader input[type='file'] {
-            padding: 10px;
-            font-size: 14px;
-        }
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
         .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
@@ -132,26 +122,26 @@ css = """
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
         /* Liens simples sans encadré */
-        .shopify-link { 
-            font-size: 16px; 
-            font-weight: bold; 
-            text-decoration: none; 
-            color: #242833; 
+        .shopify-link {
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            color: #242833;
         }
-        .dimension-text { 
-            font-size: 14px; 
-            font-weight: bold; 
-            color: #555; 
+        .dimension-text {
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
             margin: 0;
         }
         .add-to-cart-button { margin-top: 10px; }
-        .label { 
-            font-size: 14px; 
-            font-weight: bold; 
-            color: #ffffff; 
-            background-color: #242833; 
-            padding: 5px 10px; 
-            border-radius: 5px; 
+        .label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #242833;
+            padding: 5px 10px;
+            border-radius: 5px;
             display: inline-block;
             margin-left: 10px;
         }
@@ -201,6 +191,20 @@ def select_6():
 def show_examples_callback():
     st.session_state.show_examples = True
     st.session_state.show_personalization = False
+
+# =========================================
+# Fonction pour la section Exemples (conteneur horizontal)
+# =========================================
+
+def generate_label_and_button_examples(num_colors, price, shopify_cart_url):
+    """
+    Génère un conteneur horizontal pour la section Exemples,
+    avec le label à droite et le lien à gauche.
+    """
+    label_html = f"<div class='label'>{num_colors} Couleurs - {price} €</div>"
+    add_to_cart_html = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
+    combined_html = f"<div style='display: flex; align-items: center; justify-content: center; gap: 10px;'>{label_html}{add_to_cart_html}</div>"
+    return combined_html
 
 # =========================================
 # Section 1: Téléchargement de l'image
