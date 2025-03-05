@@ -382,4 +382,4 @@ if uploaded_image is not None:
                 st.markdown(combined_html, unsafe_allow_html=True)
             col_count += 1
             if col_count % 2 == 0:
-                st.markdown("<br>", unsafe_allow_html=True) 
+                st.markdown("<br>", unsafe_allow_html=True)
