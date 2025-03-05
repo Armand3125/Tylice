@@ -122,7 +122,10 @@ css = """
             margin-bottom: 60px;  /* Espacement sous les color-box */
             padding-bottom: 20px; /* Espacement interne sous les color-box */
         }  
-        .stColumn { padding: 0 !important; }
+        .stColumn {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
         .button-container { margin-bottom: 20px; }
@@ -169,11 +172,13 @@ css = """
         div.row-widget.stHorizontal { gap: 0 !important; }
 
         .stImage img {
-            margin-top: 0px !important;  /* Réduire l'espacement au-dessus de l'image si nécessaire */
+            margin-top: 0px !important;  /* Réduire l'espacement au-dessus de l'image */
+            padding-top: 0px !important;  /* Supprimer le padding au-dessus de l'image */
         }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
 
 
 
