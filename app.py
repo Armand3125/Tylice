@@ -173,6 +173,8 @@ if "show_personalization" not in st.session_state:
     st.session_state.show_personalization = False
 if "show_examples" not in st.session_state:
     st.session_state.show_examples = False
+if "selected_image_url" not in st.session_state:
+    st.session_state.selected_image_url = None
 
 # =========================================
 # Définition des Fonctions de Rappel
@@ -182,15 +184,18 @@ def select_4():
     st.session_state.num_selections = 4
     st.session_state.show_personalization = True
     st.session_state.show_examples = False
+    st.session_state.selected_image_url = None
 
 def select_6():
     st.session_state.num_selections = 6
     st.session_state.show_personalization = True
     st.session_state.show_examples = False
+    st.session_state.selected_image_url = None
 
 def show_examples_callback():
     st.session_state.show_examples = True
     st.session_state.show_personalization = False
+    st.session_state.selected_image_url = None
 
 # =========================================
 # Fonction pour la section Exemples (conteneur horizontal)
@@ -328,7 +333,7 @@ if uploaded_image is not None:
 # =========================================
 # Section Exemples de Recoloration
 # =========================================
-if 'selected_image_url' in st.session_state:
+if 'selected_image_url' in st.session_state and st.session_state.selected_image_url is not None:
     # Si une image a été sélectionnée, on l'affiche seule avec le lien d'ajout au panier
     image_url = st.session_state.selected_image_url
     st.image(image_url, use_container_width=True)
