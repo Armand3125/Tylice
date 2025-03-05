@@ -400,6 +400,8 @@ if st.session_state.show_examples:
 # Nouvelle section pour afficher l'image choisie et le lien d'ajout au panier
 if "selected_image" in st.session_state:
     st.header("Image sélectionnée")
-    st.image(st.session_state.selected_image, use_container_width=True)
+    # Taille intermédiaire de l'image
+    st.image(st.session_state.selected_image, use_container_width=True, width=500)  # Taille modérée
     st.markdown(f"<a href='{st.session_state.selected_shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
+
 
