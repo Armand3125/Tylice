@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
@@ -237,12 +237,25 @@ if uploaded_image is not None:
     if st.session_state.show_personalization and num_selections in [4, 6]:
         st.header("Personnalisations")
 
+        # Ajout du message d'avertissement
+        st.markdown(
+            "<p style='color: #64AF96; font-size: 16px; font-weight: bold;'>"
+            "L'affichage de cette section n'est pas optimisé pour les appareils mobiles. "
+            "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
+            unsafe_allow_html=True
+
+        )
+
         rectangle_width = 80 if num_selections == 4 else 50
         rectangle_height = 20
         cols_personalization = st.columns(num_selections * 2)
 
         image_pers = Image.open(uploaded_image).convert("RGB")
         resized_image_pers, img_arr_pers, labels_pers, sorted_indices_pers, new_width_pers, new_height_pers = process_image(image_pers, num_clusters=num_selections)
+
+        px_per_cm = 25
+        new_width_cm = round(new_width_pers / px_per_cm, 1)
+        new_height_cm = round(new_height_pers / px_per_cm, 1)
 
         if img_arr_pers.shape[-1] == 3:
             pixels_pers = img_arr_pers.reshape(-1, 3)
@@ -273,8 +286,9 @@ if uploaded_image is not None:
                     st.markdown("<div class='color-container'>", unsafe_allow_html=True)
                     for j, color_name in enumerate(sorted_ordered_colors_by_cluster_pers[i]):
                         color_rgb = pal[color_name]
+                        margin_class = "first-box" if j == 0 else ""
                         st.markdown(
-                            f"<div class='color-box' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px;'></div>",
+                            f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
                             unsafe_allow_html=True
                         )
                     st.markdown("</div>", unsafe_allow_html=True)
@@ -296,15 +310,29 @@ if uploaded_image is not None:
             col1_pers, col2_pers, col3_pers = st.columns([1, 6, 1])
             with col2_pers:
                 st.image(resized_image_pers_final, use_container_width=True)
-                cols_info = st.columns([1, 1, 1])
+                # Création d'une ligne à 3 colonnes sous l'image
+                cols_info = st.columns([1,1,1])
+                with cols_info[0]:
+                    st.markdown(f"<p class='dimension-text'>{new_width_cm} cm x {new_height_cm} cm</p>", unsafe_allow_html=True)
                 with cols_info[1]:
                     st.markdown(f"<div class='label'>{num_selections} Couleurs - {'7.95' if num_selections == 4 else '11.95'} €</div>", unsafe_allow_html=True)
+                with cols_info[2]:
+                    img_buffer_pers = io.BytesIO()
+                    new_image_pers.save(img_buffer_pers, format="PNG")
+                    img_buffer_pers.seek(0)
+                    cloudinary_url_pers = upload_to_cloudinary(img_buffer_pers)
+                    if not cloudinary_url_pers:
+                        st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
+                    else:
+                        shopify_cart_url_pers = generate_shopify_cart_url(cloudinary_url_pers, num_selections)
+                        st.markdown(f"<a href='{shopify_cart_url_pers}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
 
     # =========================================
     # Section Exemples de Recoloration
     # =========================================
     if st.session_state.show_examples:
         st.header("Exemples de Recoloration")
+
         image = Image.open(uploaded_image).convert("RGB")
         st.subheader("Palettes 4 Couleurs")
         cols_display = st.columns(2)
@@ -322,6 +350,8 @@ if uploaded_image is not None:
             if cloudinary_url:
                 shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
                 combined_html = generate_label_and_button_examples(num_clusters, price, shopify_cart_url)
+            else:
+                combined_html = "Erreur lors de l'ajout au panier."
             with cols_display[col_count % 2]:
                 st.image(recolored_image, use_container_width=True, width=350)
                 st.markdown(combined_html, unsafe_allow_html=True)
@@ -345,16 +375,11 @@ if uploaded_image is not None:
             if cloudinary_url:
                 shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
                 combined_html = generate_label_and_button_examples(num_clusters, price, shopify_cart_url)
+            else:
+                combined_html = "Erreur lors de l'ajout au panier."
             with cols_display[col_count % 2]:
                 st.image(recolored_image, use_container_width=True, width=350)
                 st.markdown(combined_html, unsafe_allow_html=True)
             col_count += 1
             if col_count % 2 == 0:
-                st.markdown("<br>", unsafe_allow_html=True)
-
-# Nouvelle page pour afficher l'image choisie
-if "selected_image" in st.session_state:
-    st.markdown("<style>body{background-color:white;}</style>", unsafe_allow_html=True)
-    st.title("Image sélectionnée")
-    st.image(st.session_state.selected_image, use_container_width=True, width=500)  # Taille modérée
-    st.markdown(f"<a href='{st.session_state.selected_shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True) 
