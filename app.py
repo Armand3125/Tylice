@@ -220,14 +220,16 @@ if uploaded_image is not None:
     if not st.session_state.show_examples and not st.session_state.show_personalization:
         st.session_state.show_examples = True
 
-    # Boutons en haut sur toute la largeur, ordre : Exemples, 4 Couleurs, 6 Couleurs
-    col_ex, col_4, col_6 = st.columns([1, 1, 1])
+    # Boutons en haut sur toute la largeur, ordre : Exemples, Exemple de recoloration, 4 Couleurs, 6 Couleurs
+    col_ex, col_recolor, col_4, col_6 = st.columns([1, 1, 1, 1])
     with col_ex:
         st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
+    with col_recolor:
+        st.button("Exemple de recoloration", key="select_recolor_btn", on_click=show_examples_callback)
     with col_4:
-        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=select_4)
+        st.button("Personalisation 4 couleurs", key="select_4_btn", on_click=select_4)
     with col_6:
-        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=select_6)
+        st.button("Personalisation 6 couleurs", key="select_6_btn", on_click=select_6)
 
     num_selections = st.session_state.num_selections
 
@@ -382,4 +384,4 @@ if uploaded_image is not None:
                 st.markdown(combined_html, unsafe_allow_html=True)
             col_count += 1
             if col_count % 2 == 0:
-                st.markdown("<br>", unsafe_allow_html=True) 
+                st.markdown("<br>", unsafe_allow_html=True)
