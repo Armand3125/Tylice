@@ -347,19 +347,13 @@ if st.session_state.show_examples:
         img_buffer.seek(0)
         cloudinary_url = upload_to_cloudinary(img_buffer)
         price = "7.95"
-        if cloudinary_url:
-            shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
-            combined_html = generate_label_and_button_examples(num_clusters, price, shopify_cart_url)
-        else:
-            combined_html = "Erreur lors de l'ajout au panier."
         
+        # Affichage de l'image avec le bouton "Choisir cette image"
         with cols_display[col_count % 2]:
             st.image(recolored_image, use_container_width=True, width=350)
-            # Remplacer le lien par un bouton "Choisir cette image"
             if st.button("Choisir cette image", key=f"btn_{col_count}_4"):
                 st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
                 st.session_state.selected_image_palette = palette  # Store the selected palette
-            st.markdown(combined_html, unsafe_allow_html=True)
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -378,20 +372,15 @@ if st.session_state.show_examples:
         img_buffer.seek(0)
         cloudinary_url = upload_to_cloudinary(img_buffer)
         price = "11.95"
-        if cloudinary_url:
-            shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
-            combined_html = generate_label_and_button_examples(num_clusters, price, shopify_cart_url)
-        else:
-            combined_html = "Erreur lors de l'ajout au panier."
         
+        # Affichage de l'image avec le bouton "Choisir cette image"
         with cols_display[col_count % 2]:
             st.image(recolored_image, use_container_width=True, width=350)
-            # Remplacer le lien par un bouton "Choisir cette image"
             if st.button("Choisir cette image", key=f"btn_{col_count}_6"):
                 st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
                 st.session_state.selected_image_palette = palette  # Store the selected palette
-            st.markdown(combined_html, unsafe_allow_html=True)
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
+
 
