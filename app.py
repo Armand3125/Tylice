@@ -357,9 +357,10 @@ if st.session_state.show_examples:
                 # Ajout du bouton "Choisir cette image" avec une clé unique
                 button_key = f"button_{col_count}_{num_clusters}"
                 if st.button(f"Choisir cette image ({num_clusters} Couleurs) - {price} €", key=button_key):
-                    st.image(recolored_image, caption=f"Image choisie ({num_clusters} Couleurs)", use_container_width=True)
-                    st.markdown(f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
-                
+                    # Stockage de l'image sélectionnée et du lien d'ajout au panier dans session_state
+                    st.session_state.selected_image = recolored_image
+                    st.session_state.selected_shopify_cart_url = shopify_cart_url
+
             col_count += 1
             if col_count % 2 == 0:
                 st.markdown("<br>", unsafe_allow_html=True)
@@ -388,9 +389,17 @@ if st.session_state.show_examples:
                 # Ajout du bouton "Choisir cette image" avec une clé unique
                 button_key = f"button_{col_count}_{num_clusters}"
                 if st.button(f"Choisir cette image ({num_clusters} Couleurs) - {price} €", key=button_key):
-                    st.image(recolored_image, caption=f"Image choisie ({num_clusters} Couleurs)", use_container_width=True)
-                    st.markdown(f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
-                
+                    # Stockage de l'image sélectionnée et du lien d'ajout au panier dans session_state
+                    st.session_state.selected_image = recolored_image
+                    st.session_state.selected_shopify_cart_url = shopify_cart_url
+
             col_count += 1
             if col_count % 2 == 0:
                 st.markdown("<br>", unsafe_allow_html=True)
+
+# Nouvelle section pour afficher l'image choisie et le lien d'ajout au panier
+if "selected_image" in st.session_state:
+    st.header("Image sélectionnée")
+    st.image(st.session_state.selected_image, use_container_width=True)
+    st.markdown(f"<a href='{st.session_state.selected_shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
+
