@@ -200,12 +200,10 @@ def show_examples_callback():
 def generate_label_and_button_examples(num_colors, price, shopify_cart_url):
     """
     Génère un conteneur horizontal pour la section Exemples,
-    avec le label à droite et le lien à gauche.
+    avec un bouton "Ajouter au panier".
     """
-    label_html = f"<div class='label'>{num_colors} Couleurs - {price} €</div>"
     add_to_cart_html = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
-    combined_html = f"<div style='display: flex; align-items: center; justify-content: center; gap: 10px;'>{label_html}{add_to_cart_html}</div>"
-    return combined_html
+    return add_to_cart_html
 
 # =========================================
 # Section 1: Téléchargement de l'image
@@ -382,4 +380,4 @@ if uploaded_image is not None:
                 st.markdown(combined_html, unsafe_allow_html=True)
             col_count += 1
             if col_count % 2 == 0:
-                st.markdown("<br>", unsafe_allow_html=True) 
+                st.markdown("<br>", unsafe_allow_html=True)
