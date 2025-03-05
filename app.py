@@ -118,7 +118,7 @@ css = """
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
         .color-box { 
             border: 3px solid black; 
-            margin-top: 0px;  /* Réduire au maximum la marge au-dessus de l'encadré noir */
+            margin-top: 0px !important;  /* Réduire au maximum la marge au-dessus de l'encadré noir */
             margin-bottom: 60px;  /* Espacement sous les color-box */
             padding-bottom: 20px; /* Espacement interne sous les color-box */
         }  
@@ -167,9 +167,14 @@ css = """
             background-color: #539E7D !important;
         }
         div.row-widget.stHorizontal { gap: 0 !important; }
+
+        .stImage img {
+            margin-top: 0px !important;  /* Réduire l'espacement au-dessus de l'image si nécessaire */
+        }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
 
 
 
