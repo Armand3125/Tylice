@@ -118,9 +118,9 @@ css = """
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
         .color-box { 
             border: 3px solid black; 
-            margin-top: 5px !important;  /* Réduire l'espacement au-dessus de l'encadré noir */
-            margin-bottom: 40px;  /* Réduire l'espacement sous les color-box */
-            padding-bottom: 10px; /* Espacement interne sous les color-box */
+            margin-top: 0px !important;  /* Réduire au maximum la marge au-dessus de l'encadré noir */
+            margin-bottom: 60px;  /* Espacement sous les color-box */
+            padding-bottom: 20px; /* Espacement interne sous les color-box */
         }  
         .stColumn {
             padding: 0 !important;
@@ -135,7 +135,7 @@ css = """
             font-weight: bold;
             text-decoration: none;
             color: #242833;
-            margin-top: 15px; /* Espacement réduit entre le lien et l'encadré noir */
+            margin-top: 5px !important; /* Réduire l'espacement entre l'image et le lien */
             margin-bottom: 40px; /* Espacement sous le lien */
         }
         .dimension-text {
@@ -178,6 +178,7 @@ css = """
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
 
 
 
