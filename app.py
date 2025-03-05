@@ -354,12 +354,16 @@ if st.session_state.show_examples:
             st.session_state.selected_image_palette = palette  # Store the selected palette
             st.session_state.selected_image_index = col_count  # Store the selected image index
         
-        # Si l'image a été sélectionnée, afficher uniquement cette image
+        # Si l'image est sélectionnée, l'afficher
         if hasattr(st.session_state, 'selected_image_index') and st.session_state.selected_image_index == col_count:
             with cols_display[col_count % 2]:
                 st.image(recolored_image, use_container_width=True, width=350)
-                # Ajoutez un bouton pour sélectionner cette image
                 st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
+        elif not hasattr(st.session_state, 'selected_image_index'):  # Affiche les images si aucune sélection
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, use_container_width=True, width=350)
+                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
+
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -385,15 +389,16 @@ if st.session_state.show_examples:
             st.session_state.selected_image_palette = palette  # Store the selected palette
             st.session_state.selected_image_index = col_count  # Store the selected image index
         
-        # Si l'image a été sélectionnée, afficher uniquement cette image
+        # Si l'image est sélectionnée, l'afficher
         if hasattr(st.session_state, 'selected_image_index') and st.session_state.selected_image_index == col_count:
             with cols_display[col_count % 2]:
                 st.image(recolored_image, use_container_width=True, width=350)
-                # Ajoutez un bouton pour sélectionner cette image
                 st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
+        elif not hasattr(st.session_state, 'selected_image_index'):  # Affiche les images si aucune sélection
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, use_container_width=True, width=350)
+                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
+
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
-
-
-
