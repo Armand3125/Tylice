@@ -116,10 +116,10 @@ css = """
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
         .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
-        .color-box {
-            border: 3px solid black;
-            margin-top: 10px;  /* Réduire la marge au-dessus de l'encadré noir */
-            margin-bottom: 60px;  /* Augmenter l'espacement sous les color-box */
+        .color-box { 
+            border: 3px solid black; 
+            margin-top: 5px !important;  /* Réduire la marge entre l'image et l'encadré noir */
+            margin-bottom: 60px;  /* Espacement sous l'encadré noir (inchangé) */
             padding-bottom: 20px; /* Espacement interne sous les color-box */
         }  
         .stColumn { padding: 0 !important; }
@@ -132,8 +132,8 @@ css = """
             font-weight: bold;
             text-decoration: none;
             color: #242833;
-            margin-top: 30px; /* Espacement au-dessus du lien */
-            margin-bottom: 40px; /* Ajouter plus d'espacement sous le lien */
+            margin-top: 30px; /* Espacement entre l'encadré noir et le lien */
+            margin-bottom: 40px; /* Espacement sous le lien */
         }
         .dimension-text {
             font-size: 14px;
@@ -167,11 +167,14 @@ css = """
             background-color: #539E7D !important;
         }
         div.row-widget.stHorizontal { gap: 0 !important; }
+
+        .stImage img {
+            margin-top: 0px !important;  /* Réduire l'espacement au-dessus de l'image */
+            padding-top: 0px !important;  /* Supprimer le padding au-dessus de l'image */
+        }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
-
-
 
 
 # =========================================
