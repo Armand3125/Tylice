@@ -116,10 +116,10 @@ css = """
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
         .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
-        .color-box { 
-            border: 3px solid black; 
+        .color-box {
+            border: 3px solid black;
             margin-top: 5px !important;  /* Réduire la marge entre l'image et l'encadré noir */
-            margin-bottom: 60px;  /* Espacement sous l'encadré noir (inchangé) */
+            margin-bottom: 60px !important;  /* Espacement sous les color-box inchangé */
             padding-bottom: 20px; /* Espacement interne sous les color-box */
         }  
         .stColumn { padding: 0 !important; }
@@ -132,8 +132,10 @@ css = """
             font-weight: bold;
             text-decoration: none;
             color: #242833;
-            margin-top: 30px; /* Espacement entre l'encadré noir et le lien */
+            margin-top: 20px; /* Espacement ajusté entre l'encadré noir et le lien */
             margin-bottom: 40px; /* Espacement sous le lien */
+            display: block;
+            text-align: center;
         }
         .dimension-text {
             font-size: 14px;
@@ -175,6 +177,7 @@ css = """
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
+
 
 
 # =========================================
