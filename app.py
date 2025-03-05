@@ -118,7 +118,7 @@ css = """
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
         .color-box { 
             border: 3px solid black; 
-            margin-top: 10px;  /* Réduire la marge au-dessus de l'encadré noir */
+            margin-top: 5px;  /* Réduire l'espacement au-dessus de l'encadré noir */
             margin-bottom: 60px;  /* Augmenter l'espacement sous les color-box */
             padding-bottom: 20px; /* Espacement interne sous les color-box */
         }  
@@ -170,8 +170,6 @@ css = """
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
-
-
 
 
 # =========================================
