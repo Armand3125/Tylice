@@ -118,8 +118,8 @@ css = """
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
         .color-box {
             border: 3px solid black;
-            margin-top: 3px !important;  /* Réduire la marge entre l'image et l'encadré noir */
-            margin-bottom: 60px !important;  /* Espacement sous l'encadré noir inchangé */
+            margin-top: 10px;  /* Réduire la marge au-dessus de l'encadré noir */
+            margin-bottom: 60px;  /* Augmenter l'espacement sous les color-box */
             padding-bottom: 20px; /* Espacement interne sous les color-box */
         }  
         .stColumn { padding: 0 !important; }
