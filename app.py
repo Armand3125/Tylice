@@ -348,12 +348,19 @@ if st.session_state.show_examples:
         cloudinary_url = upload_to_cloudinary(img_buffer)
         price = "7.95"
         
-        # Affichage de l'image avec le bouton "Choisir cette image"
-        with cols_display[col_count % 2]:
-            st.image(recolored_image, use_container_width=True, width=350)
-            if st.button("Choisir cette image", key=f"btn_{col_count}_4"):
-                st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
-                st.session_state.selected_image_palette = palette  # Store the selected palette
+        # Vérification de l'image sélectionnée
+        if 'selected_image_url' in st.session_state and st.session_state.selected_image_url == cloudinary_url:
+            # Afficher l'image sélectionnée
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, use_container_width=True, width=350)
+                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
+        else:
+            # Affichage de l'image avec le bouton "Choisir cette image"
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, use_container_width=True, width=350)
+                if st.button("Choisir cette image", key=f"btn_{col_count}_4"):
+                    st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
+                    st.session_state.selected_image_palette = palette  # Store the selected palette
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -373,13 +380,21 @@ if st.session_state.show_examples:
         cloudinary_url = upload_to_cloudinary(img_buffer)
         price = "11.95"
         
-        # Affichage de l'image avec le bouton "Choisir cette image"
-        with cols_display[col_count % 2]:
-            st.image(recolored_image, use_container_width=True, width=350)
-            if st.button("Choisir cette image", key=f"btn_{col_count}_6"):
-                st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
-                st.session_state.selected_image_palette = palette  # Store the selected palette
+        # Vérification de l'image sélectionnée
+        if 'selected_image_url' in st.session_state and st.session_state.selected_image_url == cloudinary_url:
+            # Afficher l'image sélectionnée
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, use_container_width=True, width=350)
+                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
+        else:
+            # Affichage de l'image avec le bouton "Choisir cette image"
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, use_container_width=True, width=350)
+                if st.button("Choisir cette image", key=f"btn_{col_count}_6"):
+                    st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
+                    st.session_state.selected_image_palette = palette  # Store the selected palette
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
+
 
