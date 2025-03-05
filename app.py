@@ -349,15 +349,21 @@ if st.session_state.show_examples:
         price = "7.95"
         
         # Affichage de l'image avec le bouton "Choisir cette image"
-        with cols_display[col_count % 2]:
-            st.image(recolored_image, use_container_width=True, width=350)
-            if st.button("Choisir cette image", key=f"btn_{col_count}_4"):
-                st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
-                st.session_state.selected_image_palette = palette  # Store the selected palette
+        if st.button("Choisir cette image", key=f"btn_{col_count}_4"):
+            st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
+            st.session_state.selected_image_palette = palette  # Store the selected palette
+            st.session_state.selected_image_index = col_count  # Store the selected image index
+        
+        # Si l'image a été sélectionnée, afficher uniquement cette image
+        if hasattr(st.session_state, 'selected_image_index') and st.session_state.selected_image_index == col_count:
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, use_container_width=True, width=350)
+                # Ajoutez un bouton pour sélectionner cette image
+                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
-    
+
     st.markdown("<hr style='border: 1px solid #ccc;'>", unsafe_allow_html=True)
     st.subheader("Palettes 6 Couleurs")
     cols_display = st.columns(2)
@@ -374,13 +380,20 @@ if st.session_state.show_examples:
         price = "11.95"
         
         # Affichage de l'image avec le bouton "Choisir cette image"
-        with cols_display[col_count % 2]:
-            st.image(recolored_image, use_container_width=True, width=350)
-            if st.button("Choisir cette image", key=f"btn_{col_count}_6"):
-                st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
-                st.session_state.selected_image_palette = palette  # Store the selected palette
+        if st.button("Choisir cette image", key=f"btn_{col_count}_6"):
+            st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
+            st.session_state.selected_image_palette = palette  # Store the selected palette
+            st.session_state.selected_image_index = col_count  # Store the selected image index
+        
+        # Si l'image a été sélectionnée, afficher uniquement cette image
+        if hasattr(st.session_state, 'selected_image_index') and st.session_state.selected_image_index == col_count:
+            with cols_display[col_count % 2]:
+                st.image(recolored_image, use_container_width=True, width=350)
+                # Ajoutez un bouton pour sélectionner cette image
+                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
+
 
 
