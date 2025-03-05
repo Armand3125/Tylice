@@ -116,12 +116,7 @@ css = """
         .stRadio div [data-testid="stMarkdownContainer"] p { display: none; }
         .radio-container { display: flex; flex-direction: column; align-items: center; margin: 10px; }
         .color-container { display: flex; flex-direction: column; align-items: center; margin-top: 5px; }
-        .color-box {
-            border: 3px solid black;
-            margin-top: 10px;  /* Réduire la marge au-dessus de l'encadré noir */
-            margin-bottom: 60px;  /* Augmenter l'espacement sous les color-box */
-            padding-bottom: 20px; /* Espacement interne sous les color-box */
-        }  
+        .color-box { border: 3px solid black; }
         .stColumn { padding: 0 !important; }
         .first-box { margin-top: 15px; }
         .percentage-container { margin-bottom: 0; }
@@ -132,8 +127,6 @@ css = """
             font-weight: bold;
             text-decoration: none;
             color: #242833;
-            margin-top: 30px; /* Espacement au-dessus du lien */
-            margin-bottom: 40px; /* Ajouter plus d'espacement sous le lien */
         }
         .dimension-text {
             font-size: 14px;
@@ -165,14 +158,12 @@ css = """
         }
         div.stButton > button:hover {
             background-color: #539E7D !important;
+
         }
         div.row-widget.stHorizontal { gap: 0 !important; }
     </style>
 """
 st.markdown(css, unsafe_allow_html=True)
-
-
-
 
 # =========================================
 # Initialisation des variables de session
@@ -229,14 +220,14 @@ if uploaded_image is not None:
     if not st.session_state.show_examples and not st.session_state.show_personalization:
         st.session_state.show_examples = True
 
-    # Boutons en haut sur toute la largeur, ordre : Exemples de Recoloration, Personnalisation 4 Couleurs, Personnalisation 6 Couleurs
+    # Boutons en haut sur toute la largeur, ordre : Exemples, 4 Couleurs, 6 Couleurs
     col_ex, col_4, col_6 = st.columns([1, 1, 1])
     with col_ex:
-        st.button("Exemples de Recoloration", key="show_examples_btn", on_click=show_examples_callback)
+        st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
     with col_4:
-        st.button("Personnalisation 4 Couleurs", key="select_4_btn", on_click=select_4)
+        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=select_4)
     with col_6:
-        st.button("Personnalisation 6 Couleurs", key="select_6_btn", on_click=select_6)
+        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=select_6)
 
     num_selections = st.session_state.num_selections
 
@@ -244,7 +235,7 @@ if uploaded_image is not None:
     # Section Personnalisation
     # =========================================
     if st.session_state.show_personalization and num_selections in [4, 6]:
-        st.header(f"Personnalisation {num_selections} Couleurs")
+        st.header("Personnalisations")
 
         # Ajout du message d'avertissement
         st.markdown(
@@ -252,6 +243,7 @@ if uploaded_image is not None:
             "L'affichage de cette section n'est pas optimisé pour les appareils mobiles. "
             "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
             unsafe_allow_html=True
+
         )
 
         rectangle_width = 80 if num_selections == 4 else 50
@@ -323,7 +315,7 @@ if uploaded_image is not None:
                 with cols_info[0]:
                     st.markdown(f"<p class='dimension-text'>{new_width_cm} cm x {new_height_cm} cm</p>", unsafe_allow_html=True)
                 with cols_info[1]:
-                    st.markdown(f"<div class='label'>{num_selections} Couleurs</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='label'>{num_selections} Couleurs - {'7.95' if num_selections == 4 else '11.95'} €</div>", unsafe_allow_html=True)
                 with cols_info[2]:
                     img_buffer_pers = io.BytesIO()
                     new_image_pers.save(img_buffer_pers, format="PNG")
