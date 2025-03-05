@@ -331,7 +331,7 @@ if uploaded_image is not None:
 if 'selected_image_url' in st.session_state:
     # Si une image a été sélectionnée, on l'affiche seule avec le lien d'ajout au panier
     image_url = st.session_state.selected_image_url
-    st.image(image_url, use_column_width=True)
+    st.image(image_url, use_container_width=True)
 
     # Lien "Ajouter au panier"
     st.markdown(f"<a href='{generate_shopify_cart_url(image_url, 4)}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
