@@ -328,69 +328,78 @@ if uploaded_image is not None:
 # =========================================
 # Section Exemples de Recoloration
 # =========================================
-if st.session_state.show_examples:
-    st.header("Exemples de Recoloration")
+if 'selected_image_url' in st.session_state:
+    # Si une image a été sélectionnée, on l'affiche seule avec le lien d'ajout au panier
+    image_url = st.session_state.selected_image_url
+    st.image(image_url, use_column_width=True)
 
-    image = Image.open(uploaded_image).convert("RGB")
-    st.subheader("Palettes 4 Couleurs")
-    cols_display = st.columns(2)
-    col_count = 0
-    for palette in palettes_examples_4:
-        num_clusters = len(palette)
-        palette_colors = [pal[color] for color in palette]
-        resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_clusters)
-        recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
-        img_buffer = io.BytesIO()
-        recolored_image.save(img_buffer, format="PNG")
-        img_buffer.seek(0)
-        cloudinary_url = upload_to_cloudinary(img_buffer)
-        price = "7.95"
-        
-        # Vérification de l'image sélectionnée
-        if 'selected_image_url' in st.session_state and st.session_state.selected_image_url == cloudinary_url:
-            # Afficher l'image sélectionnée
-            with cols_display[col_count % 2]:
-                st.image(recolored_image, use_container_width=True, width=350)
-                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
-        else:
-            # Affichage de l'image avec le bouton "Choisir cette image"
-            with cols_display[col_count % 2]:
-                st.image(recolored_image, use_container_width=True, width=350)
-                if st.button("Choisir cette image", key=f"btn_{col_count}_4"):
-                    st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
-                    st.session_state.selected_image_palette = palette  # Store the selected palette
-        col_count += 1
-        if col_count % 2 == 0:
-            st.markdown("<br>", unsafe_allow_html=True)
-    
-    st.markdown("<hr style='border: 1px solid #ccc;'>", unsafe_allow_html=True)
-    st.subheader("Palettes 6 Couleurs")
-    cols_display = st.columns(2)
-    col_count = 0
-    for palette in palettes_examples_6:
-        num_clusters = len(palette)
-        palette_colors = [pal[color] for color in palette]
-        resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_clusters)
-        recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
-        img_buffer = io.BytesIO()
-        recolored_image.save(img_buffer, format="PNG")
-        img_buffer.seek(0)
-        cloudinary_url = upload_to_cloudinary(img_buffer)
-        price = "11.95"
-        
-        # Vérification de l'image sélectionnée
-        if 'selected_image_url' in st.session_state and st.session_state.selected_image_url == cloudinary_url:
-            # Afficher l'image sélectionnée
-            with cols_display[col_count % 2]:
-                st.image(recolored_image, use_container_width=True, width=350)
-                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
-        else:
-            # Affichage de l'image avec le bouton "Choisir cette image"
-            with cols_display[col_count % 2]:
-                st.image(recolored_image, use_container_width=True, width=350)
-                if st.button("Choisir cette image", key=f"btn_{col_count}_6"):
-                    st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
-                    st.session_state.selected_image_palette = palette  # Store the selected palette
-        col_count += 1
-        if col_count % 2 == 0:
-            st.markdown("<br>", unsafe_allow_html=True)
+    # Lien "Ajouter au panier"
+    st.markdown(f"<a href='{generate_shopify_cart_url(image_url, 4)}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
+
+else:
+    if st.session_state.show_examples:
+        st.header("Exemples de Recoloration")
+
+        image = Image.open(uploaded_image).convert("RGB")
+        st.subheader("Palettes 4 Couleurs")
+        cols_display = st.columns(2)
+        col_count = 0
+        for palette in palettes_examples_4:
+            num_clusters = len(palette)
+            palette_colors = [pal[color] for color in palette]
+            resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_clusters)
+            recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
+            img_buffer = io.BytesIO()
+            recolored_image.save(img_buffer, format="PNG")
+            img_buffer.seek(0)
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            price = "7.95"
+            
+            # Vérification de l'image sélectionnée
+            if 'selected_image_url' in st.session_state and st.session_state.selected_image_url == cloudinary_url:
+                # Afficher l'image sélectionnée
+                with cols_display[col_count % 2]:
+                    st.image(recolored_image, use_container_width=True, width=350)
+                    st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
+            else:
+                # Affichage de l'image avec le bouton "Choisir cette image"
+                with cols_display[col_count % 2]:
+                    st.image(recolored_image, use_container_width=True, width=350)
+                    if st.button("Choisir cette image", key=f"btn_{col_count}_4"):
+                        st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
+                        st.session_state.selected_image_palette = palette  # Store the selected palette
+            col_count += 1
+            if col_count % 2 == 0:
+                st.markdown("<br>", unsafe_allow_html=True)
+
+        st.markdown("<hr style='border: 1px solid #ccc;'>", unsafe_allow_html=True)
+        st.subheader("Palettes 6 Couleurs")
+        cols_display = st.columns(2)
+        col_count = 0
+        for palette in palettes_examples_6:
+            num_clusters = len(palette)
+            palette_colors = [pal[color] for color in palette]
+            resized_image, img_arr, labels, sorted_indices, new_width, new_height = process_image(image, num_clusters=num_clusters)
+            recolored_image = recolor_image(img_arr, labels, sorted_indices, palette_colors)
+            img_buffer = io.BytesIO()
+            recolored_image.save(img_buffer, format="PNG")
+            img_buffer.seek(0)
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            price = "11.95"
+            
+            # Vérification de l'image sélectionnée
+            if 'selected_image_url' in st.session_state and st.session_state.selected_image_url == cloudinary_url:
+                # Afficher l'image sélectionnée
+                with cols_display[col_count % 2]:
+                    st.image(recolored_image, use_container_width=True, width=350)
+                    st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
+            else:
+                # Affichage de l'image avec le bouton "Choisir cette image"
+                with cols_display[col_count % 2]:
+                    st.image(recolored_image, use_container_width=True, width=350)
+                    if st.button("Choisir cette image", key=f"btn_{col_count}_6"):
+                        st.session_state.selected_image_url = cloudinary_url  # Store the selected image URL
+                        st.session_state.selected_image_palette = palette  # Store the selected palette
+            col_count += 1
+            if col_count % 2 == 0:
+                st.markdown("<br>", unsafe_allow_html=True)
