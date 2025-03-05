@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
@@ -174,8 +174,6 @@ if "show_personalization" not in st.session_state:
     st.session_state.show_personalization = False
 if "show_examples" not in st.session_state:
     st.session_state.show_examples = False
-if "selected_image" not in st.session_state:
-    st.session_state.selected_image = None
 
 # =========================================
 # Définition des Fonctions de Rappel
@@ -202,10 +200,12 @@ def show_examples_callback():
 def generate_label_and_button_examples(num_colors, price, shopify_cart_url):
     """
     Génère un conteneur horizontal pour la section Exemples,
-    avec un bouton "Choisir cette image".
+    avec le label à droite et le lien à gauche.
     """
+    label_html = f"<div class='label'>{num_colors} Couleurs - {price} €</div>"
     add_to_cart_html = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
-    return add_to_cart_html
+    combined_html = f"<div style='display: flex; align-items: center; justify-content: center; gap: 10px;'>{label_html}{add_to_cart_html}</div>"
+    return combined_html
 
 # =========================================
 # Section 1: Téléchargement de l'image
@@ -243,6 +243,7 @@ if uploaded_image is not None:
             "L'affichage de cette section n'est pas optimisé pour les appareils mobiles. "
             "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
             unsafe_allow_html=True
+
         )
 
         rectangle_width = 80 if num_selections == 4 else 50
@@ -344,21 +345,16 @@ if uploaded_image is not None:
             img_buffer = io.BytesIO()
             recolored_image.save(img_buffer, format="PNG")
             img_buffer.seek(0)
-
-            # Bouton pour choisir l'image
-            if st.button(f"Choisir cette image", key=f"choose_{col_count}"):
-                cloudinary_url = upload_to_cloudinary(img_buffer)
-                price = "7.95"
-                if cloudinary_url:
-                    shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
-                    combined_html = generate_label_and_button_examples(num_clusters, price, shopify_cart_url)
-                else:
-                    combined_html = "Erreur lors de l'ajout au panier."
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            price = "7.95"
+            if cloudinary_url:
+                shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
+                combined_html = generate_label_and_button_examples(num_clusters, price, shopify_cart_url)
+            else:
+                combined_html = "Erreur lors de l'ajout au panier."
+            with cols_display[col_count % 2]:
                 st.image(recolored_image, use_container_width=True, width=350)
                 st.markdown(combined_html, unsafe_allow_html=True)
-            else:
-                st.image(recolored_image, use_container_width=True, width=350)
-
             col_count += 1
             if col_count % 2 == 0:
                 st.markdown("<br>", unsafe_allow_html=True)
@@ -374,21 +370,16 @@ if uploaded_image is not None:
             img_buffer = io.BytesIO()
             recolored_image.save(img_buffer, format="PNG")
             img_buffer.seek(0)
-
-            # Bouton pour choisir l'image
-            if st.button(f"Choisir cette image", key=f"choose_{col_count}"):
-                cloudinary_url = upload_to_cloudinary(img_buffer)
-                price = "11.95"
-                if cloudinary_url:
-                    shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
-                    combined_html = generate_label_and_button_examples(num_clusters, price, shopify_cart_url)
-                else:
-                    combined_html = "Erreur lors de l'ajout au panier."
+            cloudinary_url = upload_to_cloudinary(img_buffer)
+            price = "11.95"
+            if cloudinary_url:
+                shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
+                combined_html = generate_label_and_button_examples(num_clusters, price, shopify_cart_url)
+            else:
+                combined_html = "Erreur lors de l'ajout au panier."
+            with cols_display[col_count % 2]:
                 st.image(recolored_image, use_container_width=True, width=350)
                 st.markdown(combined_html, unsafe_allow_html=True)
-            else:
-                st.image(recolored_image, use_container_width=True, width=350)
-
             col_count += 1
             if col_count % 2 == 0:
-                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True) 
