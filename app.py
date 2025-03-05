@@ -158,6 +158,7 @@ css = """
         }
         div.stButton > button:hover {
             background-color: #539E7D !important;
+
         }
         div.row-widget.stHorizontal { gap: 0 !important; }
     </style>
@@ -175,6 +176,38 @@ if "show_examples" not in st.session_state:
     st.session_state.show_examples = False
 
 # =========================================
+# Définition des Fonctions de Rappel
+# =========================================
+
+def select_4():
+    st.session_state.num_selections = 4
+    st.session_state.show_personalization = True
+    st.session_state.show_examples = False
+
+def select_6():
+    st.session_state.num_selections = 6
+    st.session_state.show_personalization = True
+    st.session_state.show_examples = False
+
+def show_examples_callback():
+    st.session_state.show_examples = True
+    st.session_state.show_personalization = False
+
+# =========================================
+# Fonction pour la section Exemples (conteneur horizontal)
+# =========================================
+
+def generate_label_and_button_examples(num_colors, price, shopify_cart_url):
+    """
+    Génère un conteneur horizontal pour la section Exemples,
+    avec le label à droite et le lien à gauche.
+    """
+    label_html = f"<div class='label'>{num_colors} Couleurs - {price} €</div>"
+    add_to_cart_html = f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>"
+    combined_html = f"<div style='display: flex; align-items: center; justify-content: center; gap: 10px;'>{label_html}{add_to_cart_html}</div>"
+    return combined_html
+
+# =========================================
 # Section 1: Téléchargement de l'image
 # =========================================
 uploaded_image = st.file_uploader("Télécharger une image", type=["jpg", "jpeg", "png"])
@@ -190,18 +223,32 @@ if uploaded_image is not None:
     # Boutons en haut sur toute la largeur, ordre : Exemples, 4 Couleurs, 6 Couleurs
     col_ex, col_4, col_6 = st.columns([1, 1, 1])
     with col_ex:
-        st.button("Exemples", key="show_examples_btn", on_click=lambda: setattr(st.session_state, "show_examples", True))
+        st.button("Exemples", key="show_examples_btn", on_click=show_examples_callback)
     with col_4:
-        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=lambda: setattr(st.session_state, "num_selections", 4))
+        st.button("4 Couleurs : 7.95 €", key="select_4_btn", on_click=select_4)
     with col_6:
-        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=lambda: setattr(st.session_state, "num_selections", 6))
+        st.button("6 Couleurs : 11.95 €", key="select_6_btn", on_click=select_6)
+
+    num_selections = st.session_state.num_selections
 
     # =========================================
     # Section Personnalisation
     # =========================================
-    if st.session_state.num_selections in [4, 6]:
-        num_selections = st.session_state.num_selections
+    if st.session_state.show_personalization and num_selections in [4, 6]:
         st.header("Personnalisations")
+
+        # Ajout du message d'avertissement
+        st.markdown(
+            "<p style='color: #64AF96; font-size: 16px; font-weight: bold;'>"
+            "L'affichage de cette section n'est pas optimisé pour les appareils mobiles. "
+            "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
+            unsafe_allow_html=True
+
+        )
+
+        rectangle_width = 80 if num_selections == 4 else 50
+        rectangle_height = 20
+        cols_personalization = st.columns(num_selections * 2)
 
         image_pers = Image.open(uploaded_image).convert("RGB")
         resized_image_pers, img_arr_pers, labels_pers, sorted_indices_pers, new_width_pers, new_height_pers = process_image(image_pers, num_clusters=num_selections)
@@ -210,15 +257,75 @@ if uploaded_image is not None:
         new_width_cm = round(new_width_pers / px_per_cm, 1)
         new_height_cm = round(new_height_pers / px_per_cm, 1)
 
-        # Bouton Choisir cette image
-        price = "7.95" if num_selections == 4 else "11.95"
-        st.button(f"Choisir cette image - {price} €", key=f"choose_{num_selections}", on_click=lambda: st.session_state.update({
-            "selected_image": resized_image_pers, "width_cm": new_width_cm, "height_cm": new_height_cm, "price": price}))
+        if img_arr_pers.shape[-1] == 3:
+            pixels_pers = img_arr_pers.reshape(-1, 3)
+            kmeans_pers = KMeans(n_clusters=num_selections, random_state=0).fit(pixels_pers)
+            labels_pers = kmeans_pers.labels_
+            centers_pers = kmeans_pers.cluster_centers_
 
-        if "selected_image" in st.session_state:
-            st.image(st.session_state.selected_image, width=500)
-            st.write(f"Dimensions: {st.session_state.width_cm} cm x {st.session_state.height_cm} cm")
-            st.write(f"Prix: {st.session_state.price} €")
+            centers_rgb_pers = np.array(centers_pers, dtype=int)
+            pal_rgb = np.array(list(pal.values()), dtype=int)
+            distances_pers = np.linalg.norm(centers_rgb_pers[:, None] - pal_rgb[None, :], axis=2)
+
+            ordered_colors_by_cluster = []
+            for i in range(num_selections):
+                closest_colors_idx = distances_pers[i].argsort()
+                ordered_colors_by_cluster.append([list(pal.keys())[idx] for idx in closest_colors_idx])
+
+            cluster_counts_pers = np.bincount(labels_pers)
+            total_pixels_pers = len(labels_pers)
+            cluster_percentages_pers = (cluster_counts_pers / total_pixels_pers) * 100
+
+            sorted_indices_pers = np.argsort(-cluster_percentages_pers)
+            sorted_ordered_colors_by_cluster_pers = [ordered_colors_by_cluster[i] for i in sorted_indices_pers]
+
+            selected_colors = []
+            selected_color_names = []
+            for i, cluster_index in enumerate(sorted_indices_pers):
+                with cols_personalization[i * 2]:
+                    st.markdown("<div class='color-container'>", unsafe_allow_html=True)
+                    for j, color_name in enumerate(sorted_ordered_colors_by_cluster_pers[i]):
+                        color_rgb = pal[color_name]
+                        margin_class = "first-box" if j == 0 else ""
+                        st.markdown(
+                            f"<div class='color-box {margin_class}' style='background-color: rgb{color_rgb}; width: {rectangle_width}px; height: {rectangle_height}px; border-radius: 5px; margin-bottom: 4px;'></div>",
+                            unsafe_allow_html=True
+                        )
+                    st.markdown("</div>", unsafe_allow_html=True)
+                with cols_personalization[i * 2 + 1]:
+                    selected_color_name = st.radio("", sorted_ordered_colors_by_cluster_pers[i], key=f"radio_{i}_pers", label_visibility="hidden")
+                    selected_colors.append(pal[selected_color_name])
+                    selected_color_names.append(selected_color_name)
+
+            new_img_arr_pers = np.zeros_like(img_arr_pers)
+            for i in range(img_arr_pers.shape[0]):
+                for j in range(img_arr_pers.shape[1]):
+                    lbl = labels_pers[i * img_arr_pers.shape[1] + j]
+                    new_color_index = np.where(sorted_indices_pers == lbl)[0][0]
+                    new_img_arr_pers[i, j] = selected_colors[new_color_index]
+
+            new_image_pers = Image.fromarray(new_img_arr_pers.astype('uint8'))
+            resized_image_pers_final = new_image_pers
+
+            col1_pers, col2_pers, col3_pers = st.columns([1, 6, 1])
+            with col2_pers:
+                st.image(resized_image_pers_final, use_container_width=True)
+                # Création d'une ligne à 3 colonnes sous l'image
+                cols_info = st.columns([1,1,1])
+                with cols_info[0]:
+                    st.markdown(f"<p class='dimension-text'>{new_width_cm} cm x {new_height_cm} cm</p>", unsafe_allow_html=True)
+                with cols_info[1]:
+                    st.markdown(f"<div class='label'>{num_selections} Couleurs - {'7.95' if num_selections == 4 else '11.95'} €</div>", unsafe_allow_html=True)
+                with cols_info[2]:
+                    img_buffer_pers = io.BytesIO()
+                    new_image_pers.save(img_buffer_pers, format="PNG")
+                    img_buffer_pers.seek(0)
+                    cloudinary_url_pers = upload_to_cloudinary(img_buffer_pers)
+                    if not cloudinary_url_pers:
+                        st.error("Erreur lors du téléchargement de l'image. Veuillez réessayer.")
+                    else:
+                        shopify_cart_url_pers = generate_shopify_cart_url(cloudinary_url_pers, num_selections)
+                        st.markdown(f"<a href='{shopify_cart_url_pers}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
 
     # =========================================
     # Section Exemples de Recoloration
