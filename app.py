@@ -158,7 +158,6 @@ css = """
         }
         div.stButton > button:hover {
             background-color: #539E7D !important;
-
         }
         div.row-widget.stHorizontal { gap: 0 !important; }
     </style>
@@ -243,7 +242,6 @@ if uploaded_image is not None:
             "L'affichage de cette section n'est pas optimisé pour les appareils mobiles. "
             "Pour une meilleure expérience et un affichage plus fluide, nous vous recommandons d'utiliser la version ordinateur.</p>",
             unsafe_allow_html=True
-
         )
 
         rectangle_width = 80 if num_selections == 4 else 50
@@ -396,5 +394,3 @@ if st.session_state.show_examples:
         col_count += 1
         if col_count % 2 == 0:
             st.markdown("<br>", unsafe_allow_html=True)
-
-
