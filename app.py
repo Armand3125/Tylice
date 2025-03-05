@@ -350,13 +350,13 @@ if st.session_state.show_examples:
         if cloudinary_url:
             shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
 
-            # Affichage d'un bouton "Choisir cette image" au lieu du lien direct
+            # Affichage du bouton "Choisir cette image" avec une clé unique
             with cols_display[col_count % 2]:
                 st.image(recolored_image, use_container_width=True, width=350)
-                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
 
-                # Ajout du bouton "Choisir cette image"
-                if st.button(f"Choisir cette image ({num_clusters} Couleurs)", key=f"button_{col_count}"):
+                # Ajout du bouton "Choisir cette image" avec une clé unique
+                button_key = f"button_{col_count}_{num_clusters}"
+                if st.button(f"Choisir cette image ({num_clusters} Couleurs) - {price} €", key=button_key):
                     st.image(recolored_image, caption=f"Image choisie ({num_clusters} Couleurs)", use_container_width=True)
                     st.markdown(f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
                 
@@ -381,13 +381,13 @@ if st.session_state.show_examples:
         if cloudinary_url:
             shopify_cart_url = generate_shopify_cart_url(cloudinary_url, num_colors=num_clusters)
 
-            # Affichage d'un bouton "Choisir cette image" au lieu du lien direct
+            # Affichage du bouton "Choisir cette image" avec une clé unique
             with cols_display[col_count % 2]:
                 st.image(recolored_image, use_container_width=True, width=350)
-                st.markdown(f"<div class='label'>{num_clusters} Couleurs - {price} €</div>", unsafe_allow_html=True)
 
-                # Ajout du bouton "Choisir cette image"
-                if st.button(f"Choisir cette image ({num_clusters} Couleurs)", key=f"button_{col_count}"):
+                # Ajout du bouton "Choisir cette image" avec une clé unique
+                button_key = f"button_{col_count}_{num_clusters}"
+                if st.button(f"Choisir cette image ({num_clusters} Couleurs) - {price} €", key=button_key):
                     st.image(recolored_image, caption=f"Image choisie ({num_clusters} Couleurs)", use_container_width=True)
                     st.markdown(f"<a href='{shopify_cart_url}' class='shopify-link' target='_blank'>Ajouter au panier</a>", unsafe_allow_html=True)
                 
