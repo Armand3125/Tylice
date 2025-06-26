@@ -104,7 +104,7 @@ palettes_examples_6 = [
     ["NC", "VB", "RE", "OM", "JO", "BJ"],
     ["NC", "BF", "VB", "BC", "BG", "BJ"],
     ["NC", "VGa", "MC", "GA", "JO", "BJ"],
-    ["NC", "MC", "BO", "BL", "JO", "BJ"],
+    ["NC", "BF", "MC", "BO", "BL", "BJ"],
 ]
 
 # =========================================
